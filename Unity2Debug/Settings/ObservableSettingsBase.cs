@@ -21,5 +21,7 @@ namespace Unity2Debug.Settings
                 return !ToNonObservableSettings().HasErrors;
             }
         }
+
+        public void NotifyAllChanged() => OnPropertyChanged();
     }
 }

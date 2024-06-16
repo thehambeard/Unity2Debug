@@ -15,8 +15,6 @@ namespace Unity2Debug.Pages.ViewModel
         [ObservableProperty]
         private string? _profileComboBoxText;
 
-        public bool IsDecompileOnly => !Profiles.CurrentProfile?.DebugSettings.CreateDebugCopy ?? true;
-
         public InitialSetupVM(RichTextBoxLogger logger, IDialogService dialogService) : base(logger, dialogService)
         {
         }

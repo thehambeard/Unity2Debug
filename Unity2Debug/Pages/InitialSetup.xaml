@@ -90,7 +90,7 @@
                     VerticalAlignment="Center"/>
                 <RadioButton 
                     Content="Only Decompile"
-                    IsChecked="{Binding IsDecompileOnly, Mode=OneWay}"
+                    IsChecked="{Binding Profiles.CurrentProfile.DebugSettings.IsDecompileOnly}"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"/>
             </WrapPanel>

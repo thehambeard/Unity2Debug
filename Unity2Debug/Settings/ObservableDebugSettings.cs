@@ -28,7 +28,6 @@ namespace Unity2Debug.Settings
         private string _retailGameExe;
         partial void OnRetailGameExeChanged(string value) => UpdateUnityVersions();
 
-
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
         private string _steamAppId;
@@ -40,6 +39,10 @@ namespace Unity2Debug.Settings
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
         private bool _createDebugCopy;
+        
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsValid))]
+        private bool _isDecompileOnly;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
@@ -75,6 +78,7 @@ namespace Unity2Debug.Settings
             this.SteamAppId = debugSettings.SteamAppId;
             this.DebugOutputPath = debugSettings.DebugOutputPath;
             this.CreateDebugCopy = debugSettings.CreateDebugCopy;
+            this.IsDecompileOnly = !debugSettings.CreateDebugCopy;
             this.UseSymlinks = debugSettings.UseSymlinks;
             this.SymLinks = [.. debugSettings.Symlinks];
 

@@ -14,8 +14,11 @@ namespace Unity2Debug.Settings
         private int _currentProfileIndex;
         partial void OnCurrentProfileIndexChanged(int value)
         {
-            base.OnPropertyChanged(nameof(CurrentProfile.DebugSettings.IsValid));
-            base.OnPropertyChanged(nameof(CurrentProfile.DebugSettings.IsValid));
+            //base.OnPropertyChanged(nameof(CurrentProfile.DebugSettings.IsValid));
+            //base.OnPropertyChanged(nameof(CurrentProfile.DecompileSettings.IsValid));
+
+            CurrentProfile?.DebugSettings.NotifyAllChanged();
+            CurrentProfile?.DecompileSettings.NotifyAllChanged();
         }
 
         public ObservableProfile? CurrentProfile
