@@ -72,7 +72,7 @@ Settings for creating of the development environment are set up here.
  * Add Button: Opens the symlink dialog
  * Remove Button: Removes the currently selected symlink filter in the list box.
 8. **Exclude Filters**
- * Same as above except this will filter out directories/files from being copied.  
+ * Same as above except this will filter out directories/files from being copied from the retail to the dev folder.
 8. **Navigation Buttons**
  * Back Button will return to Decompile Page.
    * Next Button will move on to processing.
