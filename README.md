@@ -69,27 +69,29 @@ Settings for creating of the development environment are set up here.
  * Checked if symlinks are to be used, unchecked if they are not.
 7. **Symlinks**
  * List Box: The list of the current symlink filters that are to be used.
-   * Add Button: Opens the symlink dialog
+ * Add Button: Opens the symlink dialog
  * Remove Button: Removes the currently selected symlink filter in the list box.
+8. **Exclude Filters**
+ * Same as above except this will filter out directories/files from being copied.  
 8. **Navigation Buttons**
  * Back Button will return to Decompile Page.
    * Next Button will move on to processing.
   
-### Symlinks Dialog
+### Filter Dialog
 
 They filter for symlinks are setup here. Filters are windows standard wildcards. (e.g. *.dll shows all dll files. level\* shows all files that start with level). Directories take precedence, and all files and sub directories will be symlinked. No need to symlink files in a symlink directory. The format is {path-to-filter-target}\{filter}. Do not symlink the managed folder where the assemblies that are to be decompiled.
 
 1. **Files/Directories**
  * Switch between showing only affected files or only affected directories.
-2. **List of Symlinks/List of Affected**
+2. **List of Filters/List of Affected**
  * Left/Right List Boxes.
      * Left box is the list of the filters to add.
      * Right box is a list of currently affected items. Right clicking anything in this box will copy it to the text box below. If nothing is in the is box then the filter is invalid and will not be allowed to be added.
 3. **Filter Text Box/Buttons**
- * Text Box: Filter to be added. Any change here will be reflected in the affected list box. Again, if there is nothing listed in the affected box then it cannot be added.  In Files mode a filter with '\' at the end will denote a directory (e.g. Bundles\ will symlink that directory, not need to symlink anything else in that directory.  In Directory mode you only need to type Bundles for the same effect).
+ * Text Box: Filter to be added. Any change here will be reflected in the affected list box. Again, if there is nothing listed in the affected box then it cannot be added.  In Files mode a filter with '\' at the end will denote a directory (e.g. Bundles\ will filter that directory, no need to filter anything else in that directory.  In Directory mode you only need to type Bundles for the same effect).
    * Add Button: Adds to left list box, directories will be denoted with a '\' at the end.
    * Remove Button: Removes currently selected filter from the left box.
-   * Ok Button: Returns to the Debug Settings Page and adds the symlinks. Closing the dialog via 'X' will discard the changes.
+   * Ok Button: Returns to the Debug Settings Page and adds the filters. Closing the dialog via 'X' will discard the changes.
 
 ### Processing Page
 
