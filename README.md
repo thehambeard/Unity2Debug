@@ -2,7 +2,7 @@
 #  Unity2Debug
 
 > [!IMPORTANT]
-> **The version of unity for your game is required ONLY if you plan on using the create debug option. Unity is not required for Decompilation Only.**
+> **The version of unity for your game is required ONLY if you plan on using the Create Debug Option. Unity is not required for Decompilation Only.**
 
 > [!NOTE]
 > Due to this tool using symlink functionality it must be run as admin.
@@ -10,7 +10,7 @@
 This will quickly decompile Unity games with ILSpy and setup an optional development copy of the game in a separate folder.
 
 Features:
-* Game profiles: Each profile will contain persistent settings allowing to quickly run the tool again if a game releases an update.  Profiles for Owl cat games have been included.
+* Game profiles: Each profile will contain persistent settings allowing to quickly run the tool again if a game releases an update.  Profiles for Owlcat games have been included.
 * Batch decompilation: A custom assembly list will be decompiled. Useful for games with multiple assemblies (e.g. Rogue Trader).
 * Automatic setup of development environment for debugging.
   * Copies of the dev binaries from the appropriate unity directory. Unity version of the game will attempt to auto-detect. This does mean the unity version of the game you wish to debug will be required to be installed.
