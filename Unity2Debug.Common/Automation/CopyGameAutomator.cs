@@ -42,6 +42,8 @@ namespace Unity2Debug.Common.Automation
                     if (DebugSettings.UseSymlinks)
                         symlinkPaths = DebugSettings.GetFullSymlinkDirectories();
 
+                    List<string> exludeDir = DebugSettings.GetFullExcludeDirectories();
+
                     foreach (string currentInputPath in Directory.GetDirectories(baseInputPath, "*", SearchOption.AllDirectories))
                     {
                         try
@@ -50,7 +52,7 @@ namespace Unity2Debug.Common.Automation
 
                             CancellationToken.ThrowIfCancellationRequested();
 
-                            if (DebugSettings.ExcludeDirectories.Contains(currentInputPath) || DebugSettings.ExcludeDirectories.Any(excludePath => GetParentDirectories(currentInputPath).Contains(excludePath)))
+                            if (exludeDir.Contains(currentInputPath) || exludeDir.Any(excludePath => GetParentDirectories(currentInputPath).Contains(excludePath)))
                                 continue;
 
                             if (!Directory.Exists(currentOutputPath))
@@ -80,10 +82,11 @@ namespace Unity2Debug.Common.Automation
 
                     _logger.Log("Copying Files.");
 
-                    FileMatcher fileMatcher = new(DebugSettings.GetFullSymlinkFileFilters());
+                    FileMatcher symFileMatcher = new(DebugSettings.GetFullSymlinkFileFilters());
+                    FileMatcher excludeFileMatcher = new(DebugSettings.GetFullExcludeFileFilters());
 
                     if (DebugSettings.UseSymlinks)
-                        DebugSettings.ExcludeDirectories.AddRange(symlinkPaths);
+                        exludeDir.AddRange(symlinkPaths);
                     
                     foreach (string currentInputFile in Directory.GetFiles(baseInputPath, "*.*", SearchOption.AllDirectories))
                     {
@@ -94,12 +97,15 @@ namespace Unity2Debug.Common.Automation
                             //if (DecompileSettings.AssemblyPaths.Contains(currentInputFile))
                             //    continue;
 
-                            if (DebugSettings.ExcludeDirectories.Any(excludePath => GetParentDirectories(currentInputFile).Contains(excludePath)))
+                            if (exludeDir.Any(excludePath => GetParentDirectories(currentInputFile).Contains(excludePath)))
+                                continue;
+
+                            if(excludeFileMatcher.Match(currentInputFile))
                                 continue;
 
                             var currentOutputFile = currentInputFile.Replace(baseInputPath, DebugSettings.DebugOutputPath);
 
-                            if (DebugSettings.UseSymlinks && fileMatcher.Match(currentInputFile))
+                            if (DebugSettings.UseSymlinks && symFileMatcher.Match(currentInputFile))
                             {
                                 _logger.Log($"Symlinking: {currentInputFile}");
                                 File.CreateSymbolicLink(currentOutputFile.LongPath(), currentInputFile.LongPath());

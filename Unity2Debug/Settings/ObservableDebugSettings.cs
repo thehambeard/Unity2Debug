@@ -54,7 +54,7 @@ namespace Unity2Debug.Settings
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
-        private ObservableCollection<string> _excludeDirectories = [];
+        private ObservableCollection<string> _excludeFilters = [];
 
         public ObservableDebugSettings() : this(new())
         {
@@ -85,7 +85,7 @@ namespace Unity2Debug.Settings
             this.IsDecompileOnly = !debugSettings.CreateDebugCopy;
             this.UseSymlinks = debugSettings.UseSymlinks;
             this.SymLinks = [.. debugSettings.Symlinks];
-            this.ExcludeDirectories = [.. debugSettings.ExcludeDirectories];
+            this.ExcludeFilters = [.. debugSettings.ExcludeFilters];
 
             this.UnityVersions.CollectionChanged += (s, e) =>
             {
@@ -97,7 +97,7 @@ namespace Unity2Debug.Settings
                 base.OnPropertyChanged(nameof(IsValid));
             };
 
-            this.ExcludeDirectories.CollectionChanged += (s, e) =>
+            this.ExcludeFilters.CollectionChanged += (s, e) =>
             {
                 base.OnPropertyChanged(nameof(IsValid));
             };
@@ -120,7 +120,7 @@ namespace Unity2Debug.Settings
                 CreateDebugCopy = this.CreateDebugCopy,
                 UseSymlinks = this.UseSymlinks,
                 Symlinks = [.. this.SymLinks],
-                ExcludeDirectories = [.. this.ExcludeDirectories]
+                ExcludeFilters = [.. this.ExcludeFilters]
             };
         }
     }

@@ -98,17 +98,17 @@
             </WrapPanel>
             <WrapPanel>
                 <Label 
-                    Content="Exclude Paths:" 
+                    Content="Exclude Filters:" 
                     VerticalAlignment="Top"/>
                 <ListBox 
-                    ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.ExcludeDirectories}" 
+                    ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.ExcludeFilters}" 
                     SelectedItem="{Binding SelectedExclude, UpdateSourceTrigger=PropertyChanged}" 
                     Height="150"/>
                 <StackPanel>
                     <Button 
                         Content="Add" 
                         VerticalAlignment="Top" 
-                        Command="{Binding SelectExcludePathCommand}"/>
+                        Command="{Binding AddExcludeSymlinkCommand}"/>
                     <Button 
                         Content="Remove" 
                         VerticalAlignment="Top" 

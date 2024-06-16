@@ -14,7 +14,7 @@ namespace Unity2Debug.Common.SettingsService
         public string UnityVersion { get; set; }
         public bool UseSymlinks { get; set; }
         public List<string> Symlinks { get; set; }
-        public List<string> ExcludeDirectories { get; set; }
+        public List<string> ExcludeFilters { get; set; }
         public bool CreateDebugCopy { get; set; }
 
         [JsonIgnore]
@@ -32,30 +32,36 @@ namespace Unity2Debug.Common.SettingsService
             UnityVersion = string.Empty;
             UseSymlinks = false;
             Symlinks = [];
-            ExcludeDirectories = [];
+            ExcludeFilters = [];
         }
 
-        public List<string> GetFullSymlinkDirectories()
+        public List<string> GetFullSymlinkDirectories() => GetFullSymlinkDirectories(Symlinks);
+        public List<string> GetFullExcludeDirectories() => GetFullSymlinkDirectories(ExcludeFilters);
+
+        private List<string> GetFullSymlinkDirectories(List<string> symlinks)
         {
             var basePath = Path.GetDirectoryName(RetailGameExe)
                 ?? throw new NullReferenceException();
 
             List<string> result = [];
 
-            foreach (var link in Symlinks.Where(link => link.EndsWith('\\')))
+            foreach (var link in symlinks.Where(link => link.EndsWith('\\')))
                 result.Add(Path.Combine(basePath, link).TrimSeparator());
 
             return result;
         }
 
-        public List<string> GetFullSymlinkFileFilters()
+        public List<string> GetFullSymlinkFileFilters() => GetFullSymlinkFileFilters(Symlinks);
+        public List<string> GetFullExcludeFileFilters() => GetFullSymlinkFileFilters(ExcludeFilters);
+
+        public List<string> GetFullSymlinkFileFilters(List<string> symlinks)
         {
             var basePath = Path.GetDirectoryName(RetailGameExe)
                 ?? throw new NullReferenceException();
 
             List<string> result = [];
 
-            foreach (var link in Symlinks.Where(link => !link.EndsWith('\\')))
+            foreach (var link in symlinks.Where(link => !link.EndsWith('\\')))
                 result.Add(Path.Combine(basePath, link));
 
             return result;

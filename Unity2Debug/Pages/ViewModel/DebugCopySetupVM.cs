@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 using System.IO;
 using Unity2Debug.Common.SettingsService;
 using Unity2Debug.Common.Utility.Tools;
@@ -44,13 +45,30 @@ namespace Unity2Debug.Pages.ViewModel
         }
 
         [RelayCommand]
-        private void SelectExcludePath()
+        private void AddExcludeSymlink()
         {
-            if (Profiles.CurrentProfile == null) return;
+            {
+                if (Profiles.CurrentProfile == null) return;
 
-            var path = _dialogService.OpenFolder();
-            if (path != null && !Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Contains(path))
-                Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Add(path);
+                var p = Path.GetDirectoryName(Profiles.CurrentProfile.DebugSettings.RetailGameExe);
+
+                if (p == null || !Directory.Exists(p))
+                    return;
+
+                var vm = new SymlinkDialogVM()
+                {
+                    BasePath = p
+                };
+
+                _dialogService.ShowDialog(vm, (result, vm) =>
+                {
+                    if (result == true)
+                    {
+                        var syms = Profiles.CurrentProfile.DebugSettings.ExcludeFilters.ToList();
+                        Profiles.CurrentProfile.DebugSettings.ExcludeFilters = [.. syms.Union(vm.Filters)];
+                    }
+                });
+            }
         }
 
         [RelayCommand]
@@ -58,18 +76,8 @@ namespace Unity2Debug.Pages.ViewModel
         {
             if (Profiles.CurrentProfile == null || SelectedExclude == null) return;
 
-            if (Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Contains(SelectedExclude))
-                Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Remove(SelectedExclude);
-        }
-
-        [RelayCommand]
-        private void SelectUnityInstallPath()
-        {
-            if (Profiles.CurrentProfile == null) return;
-
-            var path = _dialogService.OpenFolder();
-            if (path != null)
-                Profiles.CurrentProfile.DebugSettings.UnityInstallPath = path;
+            if (Profiles.CurrentProfile.DebugSettings.ExcludeFilters.Contains(SelectedExclude))
+                Profiles.CurrentProfile.DebugSettings.ExcludeFilters.Remove(SelectedExclude);
         }
 
         [RelayCommand]
@@ -86,7 +94,6 @@ namespace Unity2Debug.Pages.ViewModel
             {
                 BasePath = p
             };
-
 
             _dialogService.ShowDialog(vm, (result, vm) =>
             {
@@ -106,6 +113,20 @@ namespace Unity2Debug.Pages.ViewModel
             if (Profiles.CurrentProfile.DebugSettings.SymLinks.Contains(SelectedSymLink))
                 Profiles.CurrentProfile.DebugSettings.SymLinks.Remove(SelectedSymLink);
         }
+
+        [RelayCommand]
+        private void SelectUnityInstallPath()
+        {
+            if (Profiles.CurrentProfile == null) return;
+
+            var path = _dialogService.OpenFolder();
+            if (path != null)
+                Profiles.CurrentProfile.DebugSettings.UnityInstallPath = path;
+        }
+
+        
+
+        
 
         [RelayCommand]
         private void NextButtonClick()
