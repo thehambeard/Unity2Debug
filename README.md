@@ -5,7 +5,7 @@
 > **The version of unity for your game is required ONLY if you plan on using the Create Debug Option. Unity is not required for Decompilation Only.**
 
 > [!NOTE]
-> Due to this tool using symlink functionality it must be run as admin.
+> Due to this tool using symlink functionality it must be run as admin. It should ask for admin automatically.
 
 This will quickly decompile Unity games with ILSpy and setup an optional development copy of the game in a separate folder.
 
