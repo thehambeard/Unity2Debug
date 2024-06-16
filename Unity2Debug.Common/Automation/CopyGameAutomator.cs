@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using ICSharpCode.Decompiler.IL;
+using ICSharpCode.Decompiler.Semantics;
+using System.Diagnostics;
 using Unity2Debug.Common.Logging;
 using Unity2Debug.Common.SettingsService;
 using Unity2Debug.Common.Utility;
@@ -48,6 +50,9 @@ namespace Unity2Debug.Common.Automation
 
                             CancellationToken.ThrowIfCancellationRequested();
 
+                            if (DebugSettings.ExcludeDirectories.Contains(currentInputPath) || DebugSettings.ExcludeDirectories.Any(excludePath => GetParentDirectories(currentInputPath).Contains(excludePath)))
+                                continue;
+
                             if (!Directory.Exists(currentOutputPath))
                             {
                                 if (DebugSettings.UseSymlinks)
@@ -77,6 +82,9 @@ namespace Unity2Debug.Common.Automation
 
                     FileMatcher fileMatcher = new(DebugSettings.GetFullSymlinkFileFilters());
 
+                    if (DebugSettings.UseSymlinks)
+                        DebugSettings.ExcludeDirectories.AddRange(symlinkPaths);
+                    
                     foreach (string currentInputFile in Directory.GetFiles(baseInputPath, "*.*", SearchOption.AllDirectories))
                     {
                         try
@@ -86,7 +94,7 @@ namespace Unity2Debug.Common.Automation
                             //if (DecompileSettings.AssemblyPaths.Contains(currentInputFile))
                             //    continue;
 
-                            if (DebugSettings.UseSymlinks && symlinkPaths.Any(symlinkPath => GetParentDirectories(currentInputFile).Contains(symlinkPath)))
+                            if (DebugSettings.ExcludeDirectories.Any(excludePath => GetParentDirectories(currentInputFile).Contains(excludePath)))
                                 continue;
 
                             var currentOutputFile = currentInputFile.Replace(baseInputPath, DebugSettings.DebugOutputPath);

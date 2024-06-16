@@ -14,6 +14,7 @@ namespace Unity2Debug.Common.SettingsService
         public string UnityVersion { get; set; }
         public bool UseSymlinks { get; set; }
         public List<string> Symlinks { get; set; }
+        public List<string> ExcludeDirectories { get; set; }
         public bool CreateDebugCopy { get; set; }
 
         [JsonIgnore]
@@ -31,6 +32,7 @@ namespace Unity2Debug.Common.SettingsService
             UnityVersion = string.Empty;
             UseSymlinks = false;
             Symlinks = [];
+            ExcludeDirectories = [];
         }
 
         public List<string> GetFullSymlinkDirectories()

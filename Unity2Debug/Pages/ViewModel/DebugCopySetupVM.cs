@@ -16,6 +16,9 @@ namespace Unity2Debug.Pages.ViewModel
         [ObservableProperty]
         private string? _selectedSymLink;
 
+        [ObservableProperty]
+        private string? _selectedExclude;
+
         public DebugCopySetupVM(RichTextBoxLogger logger, IDialogService dialogService, ObservableProfiles profiles) : base(logger, dialogService, profiles)
         {
         }
@@ -38,6 +41,25 @@ namespace Unity2Debug.Pages.ViewModel
             var path = _dialogService.OpenFolder();
             if (path != null)
                 Profiles.CurrentProfile.DebugSettings.DebugOutputPath = path;
+        }
+
+        [RelayCommand]
+        private void SelectExcludePath()
+        {
+            if (Profiles.CurrentProfile == null) return;
+
+            var path = _dialogService.OpenFolder();
+            if (path != null && !Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Contains(path))
+                Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Add(path);
+        }
+
+        [RelayCommand]
+        private void RemoveExcludePath()
+        {
+            if (Profiles.CurrentProfile == null || SelectedExclude == null) return;
+
+            if (Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Contains(SelectedExclude))
+                Profiles.CurrentProfile.DebugSettings.ExcludeDirectories.Remove(SelectedExclude);
         }
 
         [RelayCommand]

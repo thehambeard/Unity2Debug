@@ -82,7 +82,7 @@
                     ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.SymLinks}" 
                     SelectedItem="{Binding SelectedSymLink, UpdateSourceTrigger=PropertyChanged}" 
                     IsEnabled="{Binding Profiles.CurrentProfile.DebugSettings.UseSymlinks}"
-                    Height="200"/>
+                    Height="150"/>
                 <StackPanel>
                     <Button 
                         Content="Add" 
@@ -97,6 +97,25 @@
                 </StackPanel>
             </WrapPanel>
             <WrapPanel>
+                <Label 
+                    Content="Exclude Paths:" 
+                    VerticalAlignment="Top"/>
+                <ListBox 
+                    ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.ExcludeDirectories}" 
+                    SelectedItem="{Binding SelectedExclude, UpdateSourceTrigger=PropertyChanged}" 
+                    Height="150"/>
+                <StackPanel>
+                    <Button 
+                        Content="Add" 
+                        VerticalAlignment="Top" 
+                        Command="{Binding SelectExcludePathCommand}"/>
+                    <Button 
+                        Content="Remove" 
+                        VerticalAlignment="Top" 
+                        Command="{Binding RemoveExcludePathCommand}"/>
+                </StackPanel>
+            </WrapPanel>    
+            <WrapPanel>
                 <Grid>
                     <Label
                         Content="Errors:"
@@ -109,7 +128,7 @@
                 </Grid>
                 <RichTextBox 
                     x:Name="RichTextBoxLogger"
-                    Height="230"/>
+                    Height="100"/>
                 <Button 
                     Content="Next"
                     IsEnabled="{Binding Profiles.CurrentProfile.DebugSettings.IsValid}" 

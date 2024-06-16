@@ -52,6 +52,10 @@ namespace Unity2Debug.Settings
         [NotifyPropertyChangedFor(nameof(IsValid))]
         private ObservableCollection<string> _symLinks = [];
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsValid))]
+        private ObservableCollection<string> _excludeDirectories = [];
+
         public ObservableDebugSettings() : this(new())
         {
         }
@@ -81,6 +85,7 @@ namespace Unity2Debug.Settings
             this.IsDecompileOnly = !debugSettings.CreateDebugCopy;
             this.UseSymlinks = debugSettings.UseSymlinks;
             this.SymLinks = [.. debugSettings.Symlinks];
+            this.ExcludeDirectories = [.. debugSettings.ExcludeDirectories];
 
             this.UnityVersions.CollectionChanged += (s, e) =>
             {
@@ -91,6 +96,16 @@ namespace Unity2Debug.Settings
             {
                 base.OnPropertyChanged(nameof(IsValid));
             };
+
+            this.ExcludeDirectories.CollectionChanged += (s, e) =>
+            {
+                base.OnPropertyChanged(nameof(IsValid));
+            };
+        }
+
+        private void ExcludeDirectories_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         public override DebugSettings ToNonObservableSettings()
@@ -104,7 +119,8 @@ namespace Unity2Debug.Settings
                 DebugOutputPath = this.DebugOutputPath,
                 CreateDebugCopy = this.CreateDebugCopy,
                 UseSymlinks = this.UseSymlinks,
-                Symlinks = [.. this.SymLinks]
+                Symlinks = [.. this.SymLinks],
+                ExcludeDirectories = [.. this.ExcludeDirectories]
             };
         }
     }
