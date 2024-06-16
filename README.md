@@ -4,13 +4,15 @@
 > [!IMPORTANT]
 > **The version of unity for your game is required ONLY if you plan on using the Create Debug Option. Unity is not required for Decompilation Only.**
 
-> [!NOTE]
+> [!IMPORTANT]
 > Due to this tool using symlink functionality it must be run as admin. It should ask for admin automatically.
 
 This will quickly decompile Unity games with ILSpy and setup an optional development copy of the game in a separate folder.
 
 Features:
 * Game profiles: Each profile will contain persistent settings allowing to quickly run the tool again if a game releases an update.  Profiles for Owlcat games have been included.
+> [!IMPORTANT]
+> In order for the tool to build profiles for Owlcat games a **REQUIREMENT** is that the **RETAIL** must have been the last run in order to generate the needed log file. This only needs to happen on the first time you run Unity2Debug as after that the settings are saved to disk. If you lose your settings.json from the application, the above will apply.
 * Batch decompilation: A custom assembly list will be decompiled. Useful for games with multiple assemblies (e.g. Rogue Trader).
 * Automatic setup of development environment for debugging.
   * Copies of the dev binaries from the appropriate unity directory. Unity version of the game will attempt to auto-detect. This does mean the unity version of the game you wish to debug will be required to be installed.
