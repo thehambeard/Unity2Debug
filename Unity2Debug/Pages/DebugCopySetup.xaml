@@ -1,0 +1,122 @@
+﻿<Page x:Class="Unity2Debug.Pages.DebugCopySetup"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Unity2Debug.Pages.ViewModel"
+      d:DataContext="{d:DesignInstance Type=local:DebugCopySetupVM}"
+      mc:Ignorable="d" 
+      d:DesignHeight="727" d:DesignWidth="1200"
+      Title="DebugCopySetup"
+      Loaded="Page_Loaded"
+      Style="{StaticResource DefaultPageStyle}">
+
+    <Page.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+            <Setter Property="Width" Value="950"/>
+        </Style>
+        <Style TargetType="ListBox" BasedOn="{StaticResource DefaultListBoxStyle}">
+            <Setter Property="Width" Value="950"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <StackPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Retail Game Exe:"/>
+                <TextBox 
+                    Text="{Binding Profiles.CurrentProfile.DebugSettings.RetailGameExe, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button 
+                    Content="Browse" 
+                    Command="{Binding SelectRetailExeFileCommand}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Steam App Id:" />
+                <TextBox 
+                    Width="200"
+                    Text="{Binding Profiles.CurrentProfile.DebugSettings.SteamAppId, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button 
+                    Content="Find" 
+                    Command="{Binding FindSteamAppIdClickCommand}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Debug Output Path:" />
+                <TextBox 
+                    Text="{Binding Profiles.CurrentProfile.DebugSettings.DebugOutputPath, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button 
+                    Content="Browse" 
+                    Command="{Binding SelectDebugOutputPathCommand}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Unity Path:" />
+                <TextBox 
+                    TextWrapping="Wrap"
+                    Text="{Binding Profiles.CurrentProfile.DebugSettings.UnityInstallPath, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button 
+                    Content="Browse" 
+                    Command="{Binding SelectUnityInstallPathCommand}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Unity Version:" />
+                <ComboBox 
+                    VerticalAlignment="Center" 
+                    Width="200" 
+                    ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.UnityVersions, Mode=OneWay}" 
+                    SelectedValue="{Binding Profiles.CurrentProfile.DebugSettings.UnityVersion}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Use Symlinks:" />
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding Profiles.CurrentProfile.DebugSettings.UseSymlinks, UpdateSourceTrigger=PropertyChanged}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Symlinks:" 
+                    VerticalAlignment="Top"/>
+                <ListBox 
+                    ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.SymLinks}" 
+                    SelectedItem="{Binding SelectedSymLink, UpdateSourceTrigger=PropertyChanged}" 
+                    IsEnabled="{Binding Profiles.CurrentProfile.DebugSettings.UseSymlinks}"
+                    Height="200"/>
+                <StackPanel>
+                    <Button 
+                        Content="Add" 
+                        VerticalAlignment="Top" 
+                        IsEnabled="{Binding Profiles.CurrentProfile.DebugSettings.UseSymlinks}" 
+                        Command="{Binding AddSymlinkCommand}"/>
+                    <Button 
+                        Content="Remove" 
+                        VerticalAlignment="Top" 
+                        IsEnabled="{Binding Profiles.CurrentProfile.DebugSettings.UseSymlinks}" 
+                        Command="{Binding RemoveSymlinkCommand}"/>
+                </StackPanel>
+            </WrapPanel>
+            <WrapPanel>
+                <Grid>
+                    <Label
+                        Content="Errors:"
+                        VerticalAlignment="Top"/>
+                    <Button 
+                        Content="Back" 
+                        Command="{Binding BackButtonClickCommand}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"/>    
+                </Grid>
+                <RichTextBox 
+                    x:Name="RichTextBoxLogger"
+                    Height="230"/>
+                <Button 
+                    Content="Next"
+                    IsEnabled="{Binding Profiles.CurrentProfile.DebugSettings.IsValid}" 
+                    Command="{Binding NextButtonClickCommand}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"/>
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+</Page>

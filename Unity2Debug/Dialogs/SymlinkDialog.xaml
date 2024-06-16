@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="Unity2Debug.Dialogs.SymlinkDialog" 
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Unity2Debug.Dialogs.ViewModel"
+             d:DataContext="{d:DesignInstance Type=local:SymlinkDialogVM}"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="860"
+             Style="{StaticResource DefaultControlStyle}">
+    
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}"/>
+        <Style TargetType="ListBox" BasedOn="{StaticResource DefaultListBoxStyle}"/>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+
+        <WrapPanel 
+            Grid.Row="0" 
+            Grid.Column="0">
+            <RadioButton 
+                Content="Files" 
+                IsChecked="{Binding ShowFiles}"/>
+            <RadioButton 
+                Content="Directories"/>
+        </WrapPanel>
+        <ListBox 
+            Grid.Row="1" 
+            Grid.Column="0"
+            ItemsSource="{Binding Filters}" 
+            SelectedItem="{Binding SelectedFilter}" />
+        <ListBox 
+            Grid.Row="1"
+            Grid.Column="1"
+            ItemsSource="{Binding Affected, Mode=OneWay}" 
+            PreviewMouseRightButtonDown="ListBox_PreviewMouseRightButtonDown" />
+        <Grid
+            Grid.Row="2"
+            Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox 
+                Grid.Column="0"
+                x:Name="FilterTextBox" 
+                Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"
+                HorizontalAlignment="Stretch"/>
+            <Button 
+                Grid.Column="1"
+                Content="Add" 
+                Command="{Binding AddFilterCommand}"
+                HorizontalAlignment="Right"/>
+        </Grid>
+        <Grid
+            Grid.Row="2"
+            Grid.Column="1">
+            <Button 
+                Content="Remove" 
+                HorizontalAlignment="Left"
+                Command="{Binding RemoveFilterCommand}"/>
+            <Button 
+                Content="OK" 
+                HorizontalAlignment="Right" 
+                Click="OkButton_Click"/>
+        </Grid>
+    </Grid>
+</UserControl>

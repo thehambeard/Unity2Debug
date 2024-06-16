@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="ICSharpCode.Decompiler">
+      <HintPath>..\..\ILSpy\ICSharpCode.Decompiler\bin\Release\netstandard2.0\ICSharpCode.Decompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.ILSpyX">
+      <HintPath>..\..\ILSpy\ICSharpCode.ILSpyX\bin\Release\net8.0\ICSharpCode.ILSpyX.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

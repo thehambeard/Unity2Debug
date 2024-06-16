@@ -1,0 +1,115 @@
+﻿<Page x:Class="Unity2Debug.Pages.InitialSetup"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Unity2Debug.Pages.ViewModel" 
+      d:DataContext="{d:DesignInstance Type=local:InitialSetupVM}"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="1200" 
+      Title="InitialSetup"
+      Style="{StaticResource DefaultPageStyle}">
+    
+    <Page.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+            <Setter Property="Width" Value="950"/>
+        </Style>
+        <Style TargetType="ListBox" BasedOn="{StaticResource DefaultListBoxStyle}">
+            <Setter Property="Width" Value="950"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <StackPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Profile:" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"/>
+                <ComboBox 
+                    Text="{Binding ProfileComboBoxText}" 
+                    SelectedIndex="{Binding Profiles.CurrentProfileIndex}" 
+                    ItemsSource="{Binding Profiles.ProfileNames}" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" 
+                    Width="268" 
+                    IsEditable="True"/>
+                <Button 
+                    Content="Add" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" 
+                    Command="{Binding AddProfileCommand}" />
+                <Button 
+                    Content="Remove" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" 
+                    Command="{Binding RemoveProfileButtonClickCommand}" />
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Source Code Output:" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" />
+                <TextBox 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"
+                    TextWrapping="NoWrap" 
+                    Text="{Binding Profiles.CurrentProfile.DecompileSettings.OutputDirectory, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button 
+                    Content="Browse" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" 
+                    Command="{Binding SelectOutputDirectoryCommand}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label Content="Files to Decompile:" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <ListBox 
+                    Height="300"
+                    ItemsSource="{Binding Profiles.CurrentProfile.DecompileSettings.AssemblyPaths}" 
+                    SelectedIndex="{Binding AssemblySelectedIndex}"/>
+                <StackPanel>
+                    <Button 
+                        Content="Add" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top"
+                        Command="{Binding SelectAssemblyFilesCommand}"/>
+                    <Button 
+                        Content="Remove" 
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top" 
+                        Command="{Binding RemoveAssemblyFileCommand}"
+                        CommandParameter="{Binding AssemblySelectedIndex}"/>
+                </StackPanel>
+            </WrapPanel>
+            <WrapPanel>
+                <Label/>
+                <RadioButton 
+                    Content="Create Debug Copy" 
+                    IsChecked="{Binding Profiles.CurrentProfile.DebugSettings.CreateDebugCopy}" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"/>
+                <RadioButton 
+                    Content="Only Decompile"
+                    IsChecked="{Binding IsDecompileOnly, Mode=OneWay}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Label 
+                    Content="Errors:"
+                    VerticalAlignment="Top"/>
+                <RichTextBox 
+                    x:Name="RichTextBoxLogger"
+                    Height="270"/>
+                <Button 
+                    x:Name="NextButton"
+                    Content="Next" 
+                    HorizontalAlignment="Left"  
+                    VerticalAlignment="Bottom" 
+                    Margin="10, 0, 0, 0"
+                    Command="{Binding NextButtonClickCommand}" 
+                    IsEnabled="{Binding Profiles.CurrentProfile.DecompileSettings.IsValid, Mode=OneWay}"/>
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+</Page>
