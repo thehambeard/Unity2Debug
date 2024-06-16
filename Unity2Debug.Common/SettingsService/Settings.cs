@@ -160,7 +160,7 @@ namespace Unity2Debug.Common.SettingsService
                             {
                                 AssemblyPaths =
                                 [
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Assembly-CSharp.dll",
+                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Assembly-CSharp.dll"),
                                     Path.Combine(wrathPath, "Wrath_Data\\Managed\\Assembly-CSharp-firstpass.dll"),
                                     Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Async.dll"),
                                     Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Cheats.dll"),
@@ -187,7 +187,7 @@ namespace Unity2Debug.Common.SettingsService
                                     Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.Validation.dll"),
                                     Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.Visual.dll"),
                                     Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.SharedTypes.dll")
-)                                ],
+                                ]
                             },
                             new()
                             {

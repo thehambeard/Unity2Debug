@@ -8,6 +8,8 @@
             return s.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
+        public static string NormalizePath(this string path) => Path.Combine(path.Split('/', '\\'));
+
         public static string EnsureSeparator(this string s)
         {
             if (s.EndsWith(Path.DirectorySeparatorChar) || s.EndsWith(Path.AltDirectorySeparatorChar))
