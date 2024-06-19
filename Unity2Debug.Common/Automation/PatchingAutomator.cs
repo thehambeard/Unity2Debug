@@ -20,20 +20,9 @@ namespace Unity2Debug.Common.Automation
         public void Start()
         {
             DoCreateSteamAppIdTxt();
-
-            foreach (var assembly in _decompileSettings.AssemblyPaths)
-            {
-                if (string.IsNullOrEmpty(assembly) || !File.Exists(assembly))
-                {
-                    _logger.Error($"Could not patch {assembly}, file not found. Skipping...");
-                    continue;
-                }
-
-                var outputFile = _debugSettings.ToDebugAssemblyPath(assembly);
-                //DoDe4Dot(assembly, outputFile);
-                DoCreateINI(assembly, outputFile);
-            }
+            //Saved incase De4Dot or debug INI's are needed later.  Owlcat games do not require it.
         }
+
         private void DoDe4Dot(string assembly, string outputFile)
         {
             _logger.Log($"Patching {assembly} to point at proper PDB");

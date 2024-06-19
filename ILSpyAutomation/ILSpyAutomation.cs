@@ -11,7 +11,7 @@ namespace ILSpyAutomation
 {
     public static class ILSpyAutomation
     {
-        public static ProjectItem Decompile(string inputFile, string outputDirectory, IDecompileLogger logger, IProgress<DecompilationProgress> progress /*, bool generatePDB = true*/)
+        public static ProjectItem Decompile(string inputFile, string outputDirectory, IDecompileLogger logger, IProgress<DecompilationProgress> progress, bool generatePDB = true)
         {
             Directory.CreateDirectory(outputDirectory);
 
@@ -21,12 +21,12 @@ namespace ILSpyAutomation
 
             var pid = DecompileAsProject(inputFile, projectFileName, progress);
 
-            //if (generatePDB)
-            //{
-            //    logger.Log($"Generating PDB");
+            if (generatePDB)
+            {
+                logger.Log($"Generating PDB");
 
-            //    GeneratePdbForAssembly(inputFile, Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(inputFile) + ".pdb"), progress, outputDirectory);
-            //}
+                GeneratePdbForAssembly(inputFile, Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(inputFile) + ".pdb"), progress, outputDirectory);
+            }
 
             return new ProjectItem(projectFileName, pid.PlatformName, pid.Guid, pid.TypeGuid);
         }
@@ -75,7 +75,7 @@ namespace ILSpyAutomation
                 var decompiler = GetDecompiler(assemblyFileName);
                 var progess = progress;
 
-                PortablePdbWriter.WritePdb(module, decompiler, GetSettings(module), stream, namePrefix: namePrefix, progress: progess);
+                PortablePdbWriter.WritePdb(module, decompiler, GetSettings(module), stream, namePrefix: namePrefix, progress: progess, noLogo: true);
             }
 
             return 0;

@@ -37,16 +37,7 @@ namespace Unity2Debug.Common.Automation
                 if (_debugSettings.CreateDebugCopy)
                 {
                     CreateDebug();
-
-                    //var paths = _debugSettings.ToDebugAssemblyPaths(_decompileSettings.AssemblyPaths);
-                    //if (paths == null)
-                    //{
-                    //    _logger.Error("Could not generate debug assembly paths.");
-                    //    throw new NullReferenceException();
-                    //}
-
-                    //Task.Run(() => DecompileAsync(paths)).Wait();
-
+                    
                     Task.Run(() => DecompileAsync(_decompileSettings.AssemblyPaths)).Wait();
 
                     UnityAutomator unityAutomator = new(_debugSettings, _logger);
@@ -119,23 +110,23 @@ namespace Unity2Debug.Common.Automation
                     assembly,
                     outputDir,
                     new DecompileLogger(_logger),
-                    _decompilationProgress
-                    /*_debugSettings.CreateDebugCopy*/));
+                    _decompilationProgress,
+                    _debugSettings.CreateDebugCopy));
 
                 if (project != null)
                 {
                     projects.Add(project);
 
-                    //if (_debugSettings.CreateDebugCopy)
-                    //{
-                    //    _logger.Log("Copying PDB to Debug Directory...");
+                    if (_debugSettings.CreateDebugCopy)
+                    {
+                        _logger.Log("Copying PDB to Debug Directory...");
 
-                    //    var pdb = Path.ChangeExtension(project.FilePath, ".pdb");
-                    //    var name = Path.GetFileNameWithoutExtension(_debugSettings.RetailGameExe);
-                    //    var path = Path.Combine(_debugSettings.DebugOutputPath, $@"{name}_Data\Managed", Path.GetFileName(pdb));
+                        var pdb = Path.ChangeExtension(project.FilePath, ".pdb");
+                        var name = Path.GetFileNameWithoutExtension(_debugSettings.RetailGameExe);
+                        var path = Path.Combine(_debugSettings.DebugOutputPath, $@"{name}_Data\Managed", Path.GetFileName(pdb));
 
-                    //    File.Copy(pdb, path, true);
-                    //}
+                        File.Copy(pdb, path, true);
+                    }
                 }
 
                 ResetProgress();
