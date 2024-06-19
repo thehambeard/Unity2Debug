@@ -20,9 +20,10 @@ Features:
   * steam_appid.txt will be generated. This prevents SteamWorks from interfering with the debugger. The steam_appid can be auto-detected.
   * A new copy of the game will be created as to not interfere with retail game. Allows for being able to play and develop separate from each other and have different mods installed for each version.
   * Symlinking of directories and files. These increases speed of copying and decreases size of development version. Most of the files and assets not needed in development can be symlinked with custom filters.
+  * Automatic generation of debug symbols (portable pdb's).
 
 Future Features:
-* Automatic generation of debug symbols (portable pdb's).
+
 
 ## Documentation
 
