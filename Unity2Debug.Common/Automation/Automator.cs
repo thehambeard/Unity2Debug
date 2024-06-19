@@ -52,6 +52,8 @@ namespace Unity2Debug.Common.Automation
                 timer.Stop();
 
                 _logger.Log($"Processing took {timer.Elapsed.TotalSeconds} seconds to complete.");
+
+                _decompilationProgress.Report(new() { UnitsCompleted = 1, TotalUnits = 1 });
             }
             catch (Exception ex)
             {
