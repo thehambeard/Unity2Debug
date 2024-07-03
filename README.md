@@ -62,18 +62,23 @@ Settings for creating of the development environment are set up here.
 3. **Debug Output Path**
  * Path to where you would like development copy to be located. Should probably be put in the same directory of your other Steam/GOG games. (e.g. C:\Program Files (x86)\Steam\steam apps\common\Pathfinder Second Adventure Debug)
 4. **Unity Path**
- * Path to the Unity Editor folder that contains all the version of Unity that have been installed.  Default path is C:\Program Files\Unity\Hub\Editor.
+ * Two options for the path contained here:
+     1. You can select the path where all your Unity installs are (e.g. C:\Program Files\Unity\Hub\Editor\) and the correct version will be located automatically.
+     2. You can select the direct path if you have the version installed somewhere else (e.g. Program Files/Unity <version>). The version will be verified against the game exe.
 5. **Unity Version**
- * Version of Unity the game uses. These must match or game probably will not even launch. The version will try to be automatically detected from the game exe.
+ * Version of Unity the game uses is reported here if matched. Blank if no match. Check error box for the correct version.
 6. **Use Symlinks**
  * Checked if symlinks are to be used, unchecked if they are not.
-7. **Symlinks**
+7. **Verbose Logging**
+ * Enable this if you really want to see what is being copied or symlinked. If the game is taking a long time to copy you probably have an invalid symlink/exclude filter.
+ * Enabling this will increase copy times by some amount.
+8. **Symlinks**
  * List Box: The list of the current symlink filters that are to be used.
  * Add Button: Opens the symlink dialog
  * Remove Button: Removes the currently selected symlink filter in the list box.
-8. **Exclude Filters**
+9. **Exclude Filters**
  * Same as above except this will filter out directories/files from being copied from the retail to the dev folder.
-8. **Navigation Buttons**
+10. **Navigation Buttons**
  * Back Button will return to Decompile Page.
    * Next Button will move on to processing.
   
@@ -95,4 +100,4 @@ They filter for symlinks are setup here. Filters are windows standard wildcards.
 
 ### Processing Page
 
-Logs what is going on during the copying and decompilation. During decompilation each file will show progress via the progress bar at the bottom of the page. For large assemblies it is normal for the bar to "get stuck" at the end for a bit.  This is normal behavior as files are being written to disk.  Processing should be rather quick, Pathfinder: Wrath of the Righteous takes less than 1 minute to complete all processing.
+Logs what is going on during the copying and decompilation. Each step will show progress via the progress bar at the bottom of the page. For large assemblies it is normal for the bar to "get stuck" at the end for a bit.  This is normal behavior as files are being written to disk.  Processing should be rather quick, Pathfinder: Wrath of the Righteous takes less than 1 minute to complete all processing.
