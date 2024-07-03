@@ -187,7 +187,7 @@ namespace Unity2Debug.Common.SettingsService
 
                     File.WriteAllText(file, Json.ToJSON(new List<DefaultProfile>() { template }));
                 }
-                catch(Exception ex) 
+                catch (Exception ex)
                 {
                     logger?.Error($"Failed to write {DEFAULTS_FILE_NAME}");
                     logger?.Error(ex);

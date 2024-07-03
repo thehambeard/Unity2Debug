@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
-using System.IO;
 using Unity2Debug.Common.SettingsService;
-using Unity2Debug.Common.Utility;
 using Unity2Debug.Common.Utility.Tools;
 
 namespace Unity2Debug.Settings
@@ -67,12 +65,7 @@ namespace Unity2Debug.Settings
                 UnityVersion = valid.Value.version;
             }
             else
-            {
-                if(Directory.Exists(UnityConstants.UNITY_DEFAULT_BASE))
-                    UnityInstallPath = UnityConstants.UNITY_DEFAULT_BASE;
-
                 UnityVersion = string.Empty;
-            }
         }
 
         public ObservableDebugSettings(DebugSettings debugSettings)

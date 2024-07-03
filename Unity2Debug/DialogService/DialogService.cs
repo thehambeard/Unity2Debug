@@ -1,5 +1,4 @@
-﻿using ICSharpCode.Decompiler.IL;
-using Ookii.Dialogs.Wpf;
+﻿using Ookii.Dialogs.Wpf;
 using System.Windows;
 using Unity2Debug.Dialogs;
 

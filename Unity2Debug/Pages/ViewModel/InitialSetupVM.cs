@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Unity2Debug.Common.SettingsService;
-using Unity2Debug.Dialogs;
 using Unity2Debug.Dialogs.ViewModel;
 using Unity2Debug.DialogService;
 using Unity2Debug.Logging;
@@ -38,7 +36,8 @@ namespace Unity2Debug.Pages.ViewModel
             }
         }
 
-        [RelayCommand] private void AutoAddProfile() 
+        [RelayCommand]
+        private void AutoAddProfile()
         {
             Profiles.Save();
             _dialogService.ShowDialog(new LoadDefaultsVM());
@@ -58,9 +57,7 @@ namespace Unity2Debug.Pages.ViewModel
         [RelayCommand]
         private void NextButtonClick()
         {
-            if (Profiles.CurrentProfile == null) return;
-
-            if (!Profiles.CurrentProfile.DecompileSettings.CheckIsValid()) return;
+            if (Profiles.CurrentProfile == null || !Profiles.CurrentProfile.DecompileSettings.CheckIsValid()) return;
 
             Profiles.Save();
 

@@ -19,7 +19,11 @@ namespace Unity2Debug.Logging
 
         public void Clear()
         {
-            _textBox.Dispatcher.Invoke(_textBox.Clear);
+            lock (_lock)
+            {
+                _textBox.Dispatcher.Invoke(_textBox.Clear);
+                _logBuffer.Clear();
+            }
         }
 
         public void LogToTextBox(string message)

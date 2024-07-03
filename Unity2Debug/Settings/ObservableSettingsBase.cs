@@ -13,7 +13,7 @@ namespace Unity2Debug.Settings
         public virtual T ToNonObservableSettings() => new();
 
         public bool IsValid => CheckIsValid();
-        
+
         public bool CheckIsValid()
         {
             var failures = ToNonObservableSettings().Validate().Errors;

@@ -1,7 +1,5 @@
-﻿using ICSharpCode.Decompiler.CSharp.Syntax;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Unity2Debug.Common.SettingsService;
 
 namespace Unity2Debug.Common.Utility.Tools
 {
@@ -33,7 +31,7 @@ namespace Unity2Debug.Common.Utility.Tools
         {
             validPathAndVersion = null;
             string? dir;
-            string?[] possiblePaths = 
+            string?[] possiblePaths =
             [
                 Path.Combine(basePath, "Unity.exe"),
                 Path.Combine(basePath, UnityConstants.UNITY_EXE_PATH),

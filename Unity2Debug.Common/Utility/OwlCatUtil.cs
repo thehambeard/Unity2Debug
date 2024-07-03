@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Unity2Debug.Common.Utility
 {
@@ -39,7 +33,7 @@ namespace Unity2Debug.Common.Utility
                     }
                 }
             }
-            catch 
+            catch
             {
                 return "";
             }

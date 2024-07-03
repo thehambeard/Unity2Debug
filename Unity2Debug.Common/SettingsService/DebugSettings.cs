@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Unity2Debug.Common.SettingsService.Validators;
-using Unity2Debug.Common.Utility;
-using Unity2Debug.Common.Utility.Tools;
+﻿using Unity2Debug.Common.SettingsService.Validators;
 
 namespace Unity2Debug.Common.SettingsService
 {
@@ -16,7 +13,7 @@ namespace Unity2Debug.Common.SettingsService
         public List<string> Symlinks { get; set; }
         public List<string> ExcludeFilters { get; set; }
         public bool CreateDebugCopy { get; set; }
-        public bool VerboseLogging {  get; set; }
+        public bool VerboseLogging { get; set; }
 
         public DebugSettings()
         {
@@ -47,7 +44,7 @@ namespace Unity2Debug.Common.SettingsService
                 if (link.EndsWith('\\') && !getFiles)
                     result.Add(Path.Combine(basePath, link).TrimEnd('\\'));
 
-                if(!link.EndsWith('\\') && getFiles)
+                if (!link.EndsWith('\\') && getFiles)
                     result.Add(Path.Combine(basePath, link));
             }
 

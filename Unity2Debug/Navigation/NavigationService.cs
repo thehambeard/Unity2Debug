@@ -1,5 +1,4 @@
-﻿using ICSharpCode.Decompiler.CSharp.Syntax;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using Unity2Debug.Pages.ViewModel;
 
 namespace Unity2Debug.Navigation
@@ -25,13 +24,13 @@ namespace Unity2Debug.Navigation
 
         public void Back()
         {
-            if (_pageStack.Count > 1) 
+            if (_pageStack.Count > 1)
             {
                 _pageStack.Pop();
 
                 var previousPage = _pageStack.Peek();
 
-                if(previousPage != null && previousPage.DataContext is ViewModelBase vmBase) 
+                if (previousPage != null && previousPage.DataContext is ViewModelBase vmBase)
                     vmBase.ValidateProfile();
 
                 _mainFrame.Navigate(previousPage);

@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 using System.IO;
-using Unity2Debug.Common.SettingsService;
 using Unity2Debug.Common.Utility.Tools;
 using Unity2Debug.Dialogs.ViewModel;
 using Unity2Debug.DialogService;
@@ -145,7 +143,7 @@ namespace Unity2Debug.Pages.ViewModel
         [RelayCommand]
         private void NextButtonClick()
         {
-            if (Profiles.CurrentProfile == null) return;
+            if (Profiles.CurrentProfile == null || !Profiles.CurrentProfile.DebugSettings.CheckIsValid()) return;
 
             Profiles.Save();
 

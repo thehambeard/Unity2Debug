@@ -37,7 +37,7 @@ namespace Unity2Debug.Common.Automation
                 symlinkPaths = DebugSettings.GetFullSymlinkDirectories();
 
             _logger.Log("Starting Game Copy...");
-            
+
 
             await Task.Run(() =>
             {
@@ -77,7 +77,7 @@ namespace Unity2Debug.Common.Automation
                 }
             });
 
-            _progress.Report(new() { Title = "RESET", UnitsCompleted = 0, TotalUnits = 1 }); 
+            _progress.Report(new() { Title = "RESET", UnitsCompleted = 0, TotalUnits = 1 });
 
             HashSet<string> symlinkFilePaths = [];
 

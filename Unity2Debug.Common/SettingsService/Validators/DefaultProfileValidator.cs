@@ -1,15 +1,10 @@
 ﻿using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Unity2Debug.Common.SettingsService.Validators
 {
     internal class DefaultProfileValidator : ValidatorBase<DefaultProfile>
     {
-        public DefaultProfileValidator(List<string> profileNames, Func<string>? checkExeFallback) 
+        public DefaultProfileValidator(List<string> profileNames, Func<string>? checkExeFallback)
         {
             RuleFor(x => x)
                 .Cascade(CascadeMode.Stop)

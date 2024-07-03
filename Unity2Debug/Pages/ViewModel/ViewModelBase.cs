@@ -47,7 +47,7 @@ namespace Unity2Debug.Pages.ViewModel
             Profiles = new ObservableProfiles(Common.SettingsService.Settings.Instance)
             {
                 CurrentProfileIndex = 0
-            }; 
+            };
         }
 
         public virtual void NotifyAllChanged() { }
