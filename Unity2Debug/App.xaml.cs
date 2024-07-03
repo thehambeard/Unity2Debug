@@ -12,6 +12,7 @@ namespace Unity2Debug
         public App()
         {
             DialogService.DialogService.RegisterDialog<SymlinkDialogVM, SymlinkDialog>();
+            DialogService.DialogService.RegisterDialog<LoadDefaultsVM, LoadDefaults>();
         }
     }
 }

@@ -1,14 +1,23 @@
-﻿using Unity2Debug.Common.Utility;
+﻿using Unity2Debug.Common.Logging;
+using Unity2Debug.Common.SettingsService.Validators;
+using Unity2Debug.Common.Utility;
+using Unity2Debug.Common.Utility.Tools;
 
 namespace Unity2Debug.Common.SettingsService
 {
     public class Settings
     {
-        private const string _fileName = "settings.json";
+        private static Settings? _instance;
+
+        public const string LOCAL_APP_DATA_FOLDER = "Unity2Debug";
+        public const string SETTINGS_FILE_NAME = "settings.json";
+        public const string DEFAULTS_FILE_NAME = "defaults.json";
         public Dictionary<string, SettingProfile> Profiles { get; private set; }
+        public static Settings Instance => _instance ?? new();
 
         public Settings()
         {
+            _instance = this;
             Profiles = [];
         }
 
@@ -55,14 +64,48 @@ namespace Unity2Debug.Common.SettingsService
             return result;
         }
 
-        public void Save() => StaticSave(Profiles);
-
-        public static void StaticSave(Dictionary<string, SettingProfile> profiles)
+        public static string? GetSettingsFilePath() => GetAppLocalFilePath(SETTINGS_FILE_NAME);
+        public static string? GetDefaultsFilePath() => GetAppLocalFilePath(DEFAULTS_FILE_NAME, false);
+        private static string? GetAppLocalFilePath(string filePath, bool removeAppPathCopy = true)
         {
+
             try
             {
-                var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _fileName);
-                File.WriteAllText(file, Json.ToJSON(profiles));
+                var localAppDataPath = Path.Combine
+                    (
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        LOCAL_APP_DATA_FOLDER
+                    );
+
+                if (!string.IsNullOrEmpty(localAppDataPath) && !Directory.Exists(localAppDataPath))
+                    Directory.CreateDirectory(localAppDataPath);
+
+                var localAppDataFilePath = Path.Combine
+                    (
+                        localAppDataPath,
+                        filePath
+                    );
+
+                if (File.Exists(localAppDataFilePath))
+                    return localAppDataFilePath;
+
+                var applicationPath =
+                    Path.Combine
+                    (
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        filePath
+                    );
+
+                if (File.Exists(applicationPath))
+                {
+                    if (!File.Exists(localAppDataPath))
+                        File.Copy(applicationPath, localAppDataFilePath, true);
+
+                    if (removeAppPathCopy)
+                        File.Delete(applicationPath);
+                }
+
+                return localAppDataFilePath;
             }
             catch
             {
@@ -70,24 +113,44 @@ namespace Unity2Debug.Common.SettingsService
             }
         }
 
-        public static Settings Load()
-        {
-            string file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _fileName);
 
-            var settings = new Settings();
+        public void Save(Dictionary<string, SettingProfile> profiles)
+        {
+            try
+            {
+                var file = GetSettingsFilePath();
+                if (!string.IsNullOrEmpty(file))
+                {
+                    Profiles = profiles;
+                    File.WriteAllText(file, Json.ToJSON(Profiles));
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public void Save() => Save(Profiles);
+
+        public static bool TryLoad(out Settings? settings)
+        {
+            var file = GetSettingsFilePath();
+            settings = null;
 
             try
             {
                 if (File.Exists(file))
                 {
                     var json = File.ReadAllText(file);
-                    settings.Profiles = Json.FromJSON<Dictionary<string, SettingProfile>>(json)
-                        ?? throw new NullReferenceException();
-                }
-                else
-                {
-                    settings.GenerateDefaultProfiles();
-                    settings.Save();
+                    var profiles = Json.FromJSON<Dictionary<string, SettingProfile>>(json);
+                    if (profiles != null && profiles.Count > 0)
+                    {
+                        settings = new()
+                        {
+                            Profiles = profiles
+                        };
+                    }
                 }
             }
             catch
@@ -95,244 +158,103 @@ namespace Unity2Debug.Common.SettingsService
                 throw;
             }
 
-            return settings;
+            return settings != null;
         }
 
-        private void GenerateDefaultProfiles()
+        public void GenerateDefaultProfiles(ILogger? logger = null)
         {
-            string defaultUnityPath = Directory.Exists(UnityConstants.UNITY_DEFAULT_BASE) ? UnityConstants.UNITY_DEFAULT_BASE : string.Empty;
+            logger?.Log("Attempting to add defaults...");
 
-            List<string> wrathSymlinks =
-            [
-                "Bundles\\",
-                "Wrath_Data\\StreamingAssets\\",
-                "blueprints.zip",
-                "Wrath_Data\\*.resS",
-                "Wrath_Data\\*.assets"
-            ];
+            var file = GetDefaultsFilePath();
 
-            List<string> kmSymlinks =
-            [
-                "Kingmaker_Data\\StreamingAssets\\",
-                "Kingmaker_Data\\level*",
-                "Kingmaker_Data\\*.assets",
-                "Kingmaker_Data\\*.resS"
-            ];
-
-            List<string> rtSymLinks =
-            [
-                "Steam Workshop tool\\",
-                "Modding\\",
-                "Bundles\\",
-                "WH40KRT_Data\\StreamingAssets\\",
-                "WH40KRT_Data\\*.assets",
-                "WH40KRT_Data\\*.resS"
-            ];
-
-            Profiles.Clear();
-
-            var wrathPath = OwlCatUtil.FindWrathPath();
-
-            if (!string.IsNullOrEmpty(wrathPath))
+            if (!File.Exists(file))
             {
-                Profiles.Add(
-                    "WOTR: Basic",
-                        new SettingProfile(
-                            "WOTR: Basic",
-                            new()
-                            {
-                                AssemblyPaths = [Path.Combine(wrathPath, "Wrath_Data\\Managed\\Assembly-CSharp.dll")]
-                            },
-                            new()
-                            {
-                                RetailGameExe = Path.Combine(wrathPath, "Wrath.exe"),
-                                SteamAppId = "1184370",
-                                CreateDebugCopy = true,
-                                UnityInstallPath = defaultUnityPath,
-                                UseSymlinks = true,
-                                Symlinks = wrathSymlinks,
-                            }));
-                Profiles.Add(
-                    "WOTR: Full",
-                        new SettingProfile(
-                            "WOTR: Full",
-                            new()
-                            {
-                                AssemblyPaths =
-                                [
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Assembly-CSharp.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Assembly-CSharp-firstpass.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Async.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Cheats.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Console.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Overlays.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Core.Reflection.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Builders.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Core.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Common.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Flow.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Flow.Implementations.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Grammar.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Graph.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Meshing.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.Navigation2D.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.SxEngine.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.UI.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.Modules.VisibilityGraph.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\DungeonArchitect.ThirdParty.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.Core.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.Hardware.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.UI.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.UniRx.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.Validation.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.Runtime.Visual.dll"),
-                                    Path.Combine(wrathPath, "Wrath_Data\\Managed\\Owlcat.SharedTypes.dll")
-                                ]
-                            },
-                            new()
-                            {
-                                RetailGameExe = Path.Combine(wrathPath, "Wrath.exe"),
-                                SteamAppId = "1184370",
-                                CreateDebugCopy = true,
-                                UnityInstallPath = defaultUnityPath,
-                                UseSymlinks = true,
-                                Symlinks = wrathSymlinks
-                            }));
+                logger?.Warn($"{DEFAULTS_FILE_NAME} does not exist. Writing an empty template.");
+
+                var template = new DefaultProfile()
+                {
+                    Name = "UniqueName",
+                    ExePath = "PathToGameExe.exe",
+                    SteamAppId = "SteamId",
+                    Symlinks = ["SymlinkFilter1", "SymlinkFilter2"],
+                    AssemblyPaths = ["PathToAssembly1", "PathToAssembly2"]
+                };
+
+                try
+                {
+                    if (string.IsNullOrEmpty(file) || !Directory.Exists(Path.GetDirectoryName(file)))
+                        throw new DirectoryNotFoundException();
+
+                    File.WriteAllText(file, Json.ToJSON(new List<DefaultProfile>() { template }));
+                }
+                catch(Exception ex) 
+                {
+                    logger?.Error($"Failed to write {DEFAULTS_FILE_NAME}");
+                    logger?.Error(ex);
+                }
+                return;
             }
 
-            var rtPath = OwlCatUtil.FindRTPath();
+            List<DefaultProfile>? defaults = [];
 
-            if (!string.IsNullOrEmpty(rtPath))
+            try
             {
-                Profiles.Add(
-                    "WH40KRT",
-                        new SettingProfile(
-                            "WH40KRT",
-                            new()
-                            {
-                                AssemblyPaths =
-                                [
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Assembly-CSharp-firstpass.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Autodesk.Fbx.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\BuildMode.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\BundlesBaseTypes.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\CircularBuffer.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Code.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.Async.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.Cheats.Attribute.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.Cheats.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.Console.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.Overlays.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.Reflection.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.RestServer.Client.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.RestServer.Common.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.RestServer.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Core.StateCrawler.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\CountingGuard.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\GeometryExtensions.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\GuidUtility.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.AreaLogic.TimeOfDay.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.Attributes.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.Hack.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.JsonSystem.EditorDatabase.FileDatabaseClient.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.JsonSystem.Hepers.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.JsonSystem.PropertyUtility.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.JsonSystem.PropertyUtility.Helper.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Blueprints.OverridesManager.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Controllers.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Controllers.Interfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.ElementsSystem.Interfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.EntitySystem.Stats.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Enums.Damage.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.GameInfo.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Localization.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.PubSubSystem.Core.Interfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.QA.Arbiter.Profiling.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.ResourceLinks.BaseInterfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.ResourceReplacementProvider.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.RuleSystem.Enum.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.RuleSystem.Rules.Interfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Settings.ConstructionHelpers.KeyPrefix.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Settings.Interfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Sound.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Stores.DlcInterfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Stores.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.TextTools.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.TextTools.Core.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.UI.InputSystems.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.UI.Models.Log.ContextFlag.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.UI.Models.Log.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.UI.Models.Tooltip.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.UnitLogic.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.UnitLogic.Mechanics.Facts.Interfaces.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Utility.Enums.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Utility.FlagCountable.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Utility.Fsm.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Utility.Random.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Visual.Animation.GraphVisualizerClient.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Visual.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Visual.HitSystem.Base.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Kingmaker.Visual.Particles.GameObjectsPooling.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\LocalizationShared.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.Runtime.Core.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.Runtime.UI.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.Runtime.UniRx.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.Runtime.Validation.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.Runtime.Visual.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.ShaderLibrary.Visual.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\Owlcat.Shaders.Visual.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\PFlog.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\ReadOnlyState.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\ReplayLog.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.Code.ShaderConsts.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.Editor.ElementsDescription.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.GameCore.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.ModInitializer.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.NetPlayer.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.QA.QAModeExceptionEvents.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\RogueTrader.SharedTypes.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\StatefulRandom.dll"),
-                                    Path.Combine(rtPath, "WH40KRT_Data\\Managed\\UnitLogic.Alignments.Enums.dll"
-)                            ],
-                            },
-                            new()
-                            {
-                                RetailGameExe = Path.Combine(rtPath, "WH40KRT.exe"),
-                                SteamAppId = "2186680",
-                                CreateDebugCopy = true,
-                                UnityInstallPath = defaultUnityPath,
-                                UseSymlinks = true,
-                                Symlinks = rtSymLinks
-                            }));
+                defaults = Json.FromJSON<List<DefaultProfile>>(File.ReadAllText(file)) ?? throw new NullReferenceException();
+            }
+            catch (Exception ex)
+            {
+                logger?.Error($"{DEFAULTS_FILE_NAME} is invalid.");
+                logger?.Error(ex);
             }
 
-            var kmPath = OwlCatUtil.FindKMPath();
+            logger?.Log($"{defaults.Count} default profile{(defaults.Count > 1 ? "s" : string.Empty)} found...");
 
-            if (!string.IsNullOrEmpty(kmPath))
+            foreach (var d in defaults)
             {
+                var dpv = new DefaultProfileValidator([.. Profiles.Keys], () =>
+                {
+                    if (d.ExePath.EndsWith("Wrath.exe"))
+                        return Path.Combine(OwlCatUtil.FindWrathPath(), "Wrath.exe");
+                    if (d.ExePath.EndsWith("WH40KRT.exe"))
+                        return Path.Combine(OwlCatUtil.FindRTPath(), "WH40KRT.exe");
+                    if (d.ExePath.EndsWith("Kingmaker.exe"))
+                        return Path.Combine(OwlCatUtil.FindKMPath(), "Kingmaker.exe");
+
+                    return string.Empty;
+                });
+
+                var validation = dpv.Validate(d);
+
+                if (!validation.IsValid)
+                {
+                    foreach (var failure in validation.Errors)
+                        logger?.LogValidation(failure);
+
+                    continue;
+                }
+
+                logger?.Log($"Added {d.Name}");
+
+                UnityTools.TryGetVaildUnityPath(out var unityPathAndVersion, UnityConstants.UNITY_DEFAULT_BASE, d.ExePath);
 
                 Profiles.Add(
-                    "Kingmaker",
-                        new SettingProfile(
-                            "Kingmaker",
-                            new()
-                            {
-                                AssemblyPaths =
-                                [
-                                    Path.Combine(kmPath, "Kingmaker_Data\\Managed\\Assembly-CSharp.dll"),
-                                ],
-                            },
-                            new()
-                            {
-                                RetailGameExe = Path.Combine(kmPath, "Kingmaker.exe"),
-                                SteamAppId = "640820",
-                                CreateDebugCopy = true,
-                                UnityInstallPath = defaultUnityPath,
-                                UseSymlinks = true,
-                                Symlinks = kmSymlinks
-                            }));
+                d.Name,
+                new(d.Name,
+                new()
+                {
+                    AssemblyPaths = d.GetAbsoluteAssemblyPaths(),
+                },
+                new()
+                {
+                    RetailGameExe = d.ExePath,
+                    CreateDebugCopy = true,
+                    VerboseLogging = false,
+                    SteamAppId = d.SteamAppId,
+                    Symlinks = d.Symlinks,
+                    UseSymlinks = true,
+                    UnityInstallPath = unityPathAndVersion != null ? unityPathAndVersion.Value.path : string.Empty,
+                    UnityVersion = unityPathAndVersion != null ? unityPathAndVersion.Value.version : string.Empty
+                }));
             }
         }
     }

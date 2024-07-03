@@ -12,7 +12,7 @@ using Unity2Debug.Settings;
 
 namespace Unity2Debug.Pages.ViewModel
 {
-    public partial class DebugCopySetupVM : ViewModelBase<DebugCopySetupVM, DebugSettings>
+    public partial class DebugCopySetupVM : ViewModelBase
     {
         [ObservableProperty]
         private string? _selectedSymLink;
@@ -20,9 +20,14 @@ namespace Unity2Debug.Pages.ViewModel
         [ObservableProperty]
         private string? _selectedExclude;
 
-        public DebugCopySetupVM(RichTextBoxLogger logger, IDialogService dialogService, ObservableProfiles profiles) : base(logger, dialogService, profiles)
+        public DebugCopySetupVM(TextBoxLogger logger, IDialogService dialogService, ObservableProfiles profiles) : base(logger, dialogService, profiles)
         {
+            NotifyAllChanged();
         }
+
+        public override void NotifyAllChanged() => Profiles?.CurrentProfile?.DebugSettings.NotifyAllChanged();
+        public override void ValidateProfile() => Profiles?.CurrentProfile?.DebugSettings.CheckIsValid();
+
 
         [RelayCommand]
         private void SelectRetailExeFile()
@@ -32,6 +37,8 @@ namespace Unity2Debug.Pages.ViewModel
             var file = _dialogService.OpenFile("EXE files (*.exe)|*.exe");
             if (file != null)
                 Profiles.CurrentProfile.DebugSettings.RetailGameExe = file;
+
+            ValidateProfile();
         }
 
         [RelayCommand]
@@ -42,33 +49,35 @@ namespace Unity2Debug.Pages.ViewModel
             var path = _dialogService.OpenFolder();
             if (path != null)
                 Profiles.CurrentProfile.DebugSettings.DebugOutputPath = path;
+
+            ValidateProfile();
         }
 
         [RelayCommand]
         private void AddExcludeSymlink()
         {
+            if (Profiles.CurrentProfile == null) return;
+
+            var p = Path.GetDirectoryName(Profiles.CurrentProfile.DebugSettings.RetailGameExe);
+
+            if (p == null || !Directory.Exists(p))
+                return;
+
+            var vm = new SymlinkDialogVM()
             {
-                if (Profiles.CurrentProfile == null) return;
+                BasePath = p
+            };
 
-                var p = Path.GetDirectoryName(Profiles.CurrentProfile.DebugSettings.RetailGameExe);
-
-                if (p == null || !Directory.Exists(p))
-                    return;
-
-                var vm = new SymlinkDialogVM()
+            _dialogService.ShowDialog(vm, (result, vm) =>
+            {
+                if (result == true)
                 {
-                    BasePath = p
-                };
+                    var syms = Profiles.CurrentProfile.DebugSettings.ExcludeFilters.ToList();
+                    Profiles.CurrentProfile.DebugSettings.ExcludeFilters = [.. syms.Union(vm.Filters)];
+                }
+            });
 
-                _dialogService.ShowDialog(vm, (result, vm) =>
-                {
-                    if (result == true)
-                    {
-                        var syms = Profiles.CurrentProfile.DebugSettings.ExcludeFilters.ToList();
-                        Profiles.CurrentProfile.DebugSettings.ExcludeFilters = [.. syms.Union(vm.Filters)];
-                    }
-                });
-            }
+            NotifyAllChanged();
         }
 
         [RelayCommand]
@@ -78,6 +87,8 @@ namespace Unity2Debug.Pages.ViewModel
 
             if (Profiles.CurrentProfile.DebugSettings.ExcludeFilters.Contains(SelectedExclude))
                 Profiles.CurrentProfile.DebugSettings.ExcludeFilters.Remove(SelectedExclude);
+
+            NotifyAllChanged();
         }
 
         [RelayCommand]
@@ -103,6 +114,8 @@ namespace Unity2Debug.Pages.ViewModel
                     Profiles.CurrentProfile.DebugSettings.SymLinks = [.. syms.Union(vm.Filters)];
                 }
             });
+
+            NotifyAllChanged();
         }
 
         [RelayCommand]
@@ -112,6 +125,8 @@ namespace Unity2Debug.Pages.ViewModel
 
             if (Profiles.CurrentProfile.DebugSettings.SymLinks.Contains(SelectedSymLink))
                 Profiles.CurrentProfile.DebugSettings.SymLinks.Remove(SelectedSymLink);
+
+            NotifyAllChanged();
         }
 
         [RelayCommand]
@@ -120,13 +135,12 @@ namespace Unity2Debug.Pages.ViewModel
             if (Profiles.CurrentProfile == null) return;
 
             var path = _dialogService.OpenFolder();
+
             if (path != null)
                 Profiles.CurrentProfile.DebugSettings.UnityInstallPath = path;
+
+            ValidateProfile();
         }
-
-        
-
-        
 
         [RelayCommand]
         private void NextButtonClick()
@@ -152,6 +166,8 @@ namespace Unity2Debug.Pages.ViewModel
                 Profiles.CurrentProfile.DebugSettings.SteamAppId = appId;
             else
                 _logger.Error("Unable to find the AppId.");
+
+            ValidateProfile();
         }
     }
 }

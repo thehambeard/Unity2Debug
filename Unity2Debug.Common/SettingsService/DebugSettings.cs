@@ -16,12 +16,7 @@ namespace Unity2Debug.Common.SettingsService
         public List<string> Symlinks { get; set; }
         public List<string> ExcludeFilters { get; set; }
         public bool CreateDebugCopy { get; set; }
-
-        [JsonIgnore]
-        public List<string> UnityVersions
-        {
-            get => UnityTools.GetUnityVersionsInPath(UnityInstallPath);
-        }
+        public bool VerboseLogging {  get; set; }
 
         public DebugSettings()
         {
@@ -35,34 +30,26 @@ namespace Unity2Debug.Common.SettingsService
             ExcludeFilters = [];
         }
 
-        public List<string> GetFullSymlinkDirectories() => GetFullSymlinkDirectories(Symlinks);
-        public List<string> GetFullExcludeDirectories() => GetFullSymlinkDirectories(ExcludeFilters);
+        public HashSet<string> GetFullSymlinkDirectories() => GetFullSymlinkPaths(Symlinks, false);
+        public HashSet<string> GetFullExcludeDirectories() => GetFullSymlinkPaths(ExcludeFilters, false);
+        public HashSet<string> GetFullSymlinkFileFilters() => GetFullSymlinkPaths(Symlinks, true);
+        public HashSet<string> GetFullExcludeFileFilters() => GetFullSymlinkPaths(ExcludeFilters, true);
 
-        private List<string> GetFullSymlinkDirectories(List<string> symlinks)
+        private HashSet<string> GetFullSymlinkPaths(List<string> symlinks, bool getFiles)
         {
             var basePath = Path.GetDirectoryName(RetailGameExe)
                 ?? throw new NullReferenceException();
 
-            List<string> result = [];
+            HashSet<string> result = [];
 
-            foreach (var link in symlinks.Where(link => link.EndsWith('\\')))
-                result.Add(Path.Combine(basePath, link).TrimSeparator());
+            foreach (var link in symlinks)
+            {
+                if (link.EndsWith('\\') && !getFiles)
+                    result.Add(Path.Combine(basePath, link).TrimEnd('\\'));
 
-            return result;
-        }
-
-        public List<string> GetFullSymlinkFileFilters() => GetFullSymlinkFileFilters(Symlinks);
-        public List<string> GetFullExcludeFileFilters() => GetFullSymlinkFileFilters(ExcludeFilters);
-
-        public List<string> GetFullSymlinkFileFilters(List<string> symlinks)
-        {
-            var basePath = Path.GetDirectoryName(RetailGameExe)
-                ?? throw new NullReferenceException();
-
-            List<string> result = [];
-
-            foreach (var link in symlinks.Where(link => !link.EndsWith('\\')))
-                result.Add(Path.Combine(basePath, link));
+                if(!link.EndsWith('\\') && getFiles)
+                    result.Add(Path.Combine(basePath, link));
+            }
 
             return result;
         }

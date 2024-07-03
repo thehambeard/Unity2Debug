@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using Unity2Debug.Common.SettingsService;
+using Unity2Debug.Common.Utility;
 using Unity2Debug.Common.Utility.Tools;
 
 namespace Unity2Debug.Settings
@@ -10,23 +11,17 @@ namespace Unity2Debug.Settings
     {
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
-        private ObservableCollection<string> _unityVersions = [];
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsValid))]
         private string _unityVersion;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
-        [NotifyPropertyChangedFor(nameof(UnityVersions))]
         private string _unityInstallPath;
-        partial void OnUnityInstallPathChanged(string value) => UpdateUnityVersions();
+        partial void OnUnityInstallPathChanged(string value) => UpdateUnityVersion();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
-        [NotifyPropertyChangedFor(nameof(UnityVersions))]
         private string _retailGameExe;
-        partial void OnRetailGameExeChanged(string value) => UpdateUnityVersions();
+        partial void OnRetailGameExeChanged(string value) => UpdateUnityVersion();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
@@ -39,7 +34,7 @@ namespace Unity2Debug.Settings
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
         private bool _createDebugCopy;
-        
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsValid))]
         private bool _isDecompileOnly;
@@ -56,26 +51,32 @@ namespace Unity2Debug.Settings
         [NotifyPropertyChangedFor(nameof(IsValid))]
         private ObservableCollection<string> _excludeFilters = [];
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsValid))]
+        private bool _verboseLogging;
+
         public ObservableDebugSettings() : this(new())
         {
         }
 
-        public void UpdateUnityVersions()
+        public void UpdateUnityVersion()
         {
-            if (Directory.Exists(UnityInstallPath))
+            if (UnityTools.TryGetVaildUnityPath(out var valid, UnityInstallPath, RetailGameExe) && valid != null)
             {
-                UnityVersions = [.. UnityTools.GetUnityVersionsInPath(UnityInstallPath)];
+                UnityInstallPath = valid.Value.path;
+                UnityVersion = valid.Value.version;
+            }
+            else
+            {
+                if(Directory.Exists(UnityConstants.UNITY_DEFAULT_BASE))
+                    UnityInstallPath = UnityConstants.UNITY_DEFAULT_BASE;
 
-                var version = UnityTools.GetUnityVersionFromAssembly(RetailGameExe);
-
-                if (!string.IsNullOrEmpty(version) && UnityVersions.Contains($"{version}f1"))
-                    UnityVersion = $"{version}f1";
+                UnityVersion = string.Empty;
             }
         }
 
         public ObservableDebugSettings(DebugSettings debugSettings)
         {
-            this.UnityVersions = [.. debugSettings.UnityVersions];
             this.UnityVersion = debugSettings.UnityVersion;
             this.UnityInstallPath = debugSettings.UnityInstallPath;
             this.RetailGameExe = debugSettings.RetailGameExe;
@@ -86,12 +87,7 @@ namespace Unity2Debug.Settings
             this.UseSymlinks = debugSettings.UseSymlinks;
             this.SymLinks = [.. debugSettings.Symlinks];
             this.ExcludeFilters = [.. debugSettings.ExcludeFilters];
-
-            this.UnityVersions.CollectionChanged += (s, e) =>
-            {
-                base.OnPropertyChanged(nameof(IsValid));
-            };
-
+            this.VerboseLogging = debugSettings.VerboseLogging;
             this.SymLinks.CollectionChanged += (s, e) =>
             {
                 base.OnPropertyChanged(nameof(IsValid));
@@ -101,11 +97,6 @@ namespace Unity2Debug.Settings
             {
                 base.OnPropertyChanged(nameof(IsValid));
             };
-        }
-
-        private void ExcludeDirectories_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         public override DebugSettings ToNonObservableSettings()
@@ -120,7 +111,8 @@ namespace Unity2Debug.Settings
                 CreateDebugCopy = this.CreateDebugCopy,
                 UseSymlinks = this.UseSymlinks,
                 Symlinks = [.. this.SymLinks],
-                ExcludeFilters = [.. this.ExcludeFilters]
+                ExcludeFilters = [.. this.ExcludeFilters],
+                VerboseLogging = this.VerboseLogging
             };
         }
     }

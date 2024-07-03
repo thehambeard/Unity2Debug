@@ -1,4 +1,5 @@
-﻿using Ookii.Dialogs.Wpf;
+﻿using ICSharpCode.Decompiler.IL;
+using Ookii.Dialogs.Wpf;
 using System.Windows;
 using Unity2Debug.Dialogs;
 
@@ -78,6 +79,11 @@ namespace Unity2Debug.DialogService
                 element.DataContext = modelInstance;
 
             dialog.ShowDialog();
+        }
+
+        public bool ShowMessageBox(string text, string caption, bool prompt)
+        {
+            return MessageBox.Show(text, caption, prompt ? MessageBoxButton.YesNo : MessageBoxButton.OK, prompt ? MessageBoxImage.Question : MessageBoxImage.Exclamation) == MessageBoxResult.Yes;
         }
     }
 }

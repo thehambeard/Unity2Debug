@@ -30,7 +30,7 @@ namespace Unity2Debug.Pages
                 ProgressBar.Value = Math.Max(percent, ProgressBar.Value);
             };
 
-            _vm = new ProcessingVM(new(RichTextBoxLogger), profiles, progress);
+            _vm = new ProcessingVM(new(TextBoxLogger), profiles, progress);
             DataContext = _vm;
         }
 

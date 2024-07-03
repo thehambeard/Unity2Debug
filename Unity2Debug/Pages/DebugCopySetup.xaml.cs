@@ -14,7 +14,7 @@ namespace Unity2Debug.Pages
         {
             InitializeComponent();
 
-            _vm = new DebugCopySetupVM(new(RichTextBoxLogger), new DialogService.DialogService(), profiles);
+            _vm = new DebugCopySetupVM(new(TextBoxLogger), new DialogService.DialogService(), profiles);
             DataContext = _vm;
         }
 

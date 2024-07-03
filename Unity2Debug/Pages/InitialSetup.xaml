@@ -44,6 +44,11 @@
                     HorizontalAlignment="Left" 
                     VerticalAlignment="Center" 
                     Command="{Binding RemoveProfileButtonClickCommand}" />
+                <Button 
+                    Content="Auto Add" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center" 
+                    Command="{Binding AutoAddProfileCommand}" />  
             </WrapPanel>
             <WrapPanel>
                 <Label 
@@ -98,8 +103,10 @@
                 <Label 
                     Content="Errors:"
                     VerticalAlignment="Top"/>
-                <RichTextBox 
-                    x:Name="RichTextBoxLogger"
+                <TextBox 
+                    x:Name="TextBoxLogger"
+                    Style="{StaticResource TextBoxLogger}"
+                    Margin="5"
                     Height="270"/>
                 <Button 
                     x:Name="NextButton"

@@ -5,9 +5,9 @@ namespace Unity2Debug.Common.Utility
 {
     public class FileMatcher
     {
-        private Dictionary<string, Matcher> _fileFilters;
+        private readonly Dictionary<string, Matcher> _fileFilters;
 
-        public FileMatcher(List<string> filters)
+        public FileMatcher(HashSet<string> filters)
         {
             _fileFilters = [];
             RegisterFilters(filters);
@@ -30,7 +30,7 @@ namespace Unity2Debug.Common.Utility
             return false;
         }
 
-        private void RegisterFilters(List<string> filters)
+        private void RegisterFilters(HashSet<string> filters)
         {
             foreach (var filter in filters)
             {

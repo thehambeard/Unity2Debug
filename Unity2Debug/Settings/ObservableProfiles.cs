@@ -14,9 +14,6 @@ namespace Unity2Debug.Settings
         private int _currentProfileIndex;
         partial void OnCurrentProfileIndexChanged(int value)
         {
-            //base.OnPropertyChanged(nameof(CurrentProfile.DebugSettings.IsValid));
-            //base.OnPropertyChanged(nameof(CurrentProfile.DecompileSettings.IsValid));
-
             CurrentProfile?.DebugSettings.NotifyAllChanged();
             CurrentProfile?.DecompileSettings.NotifyAllChanged();
         }
@@ -92,7 +89,7 @@ namespace Unity2Debug.Settings
                     settings.Add(profile.Name, new(profile.Name, decompile, debug));
             }
 
-            Common.SettingsService.Settings.StaticSave(settings);
+            Common.SettingsService.Settings.Instance.Save(settings);
         }
     }
 }

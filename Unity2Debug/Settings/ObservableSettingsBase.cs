@@ -12,14 +12,13 @@ namespace Unity2Debug.Settings
 
         public virtual T ToNonObservableSettings() => new();
 
-        public bool IsValid
+        public bool IsValid => CheckIsValid();
+        
+        public bool CheckIsValid()
         {
-            get
-            {
-                var failures = ToNonObservableSettings().Validate().Errors;
-                WeakReferenceMessenger.Default.Send(new ValidationMessage(failures));
-                return !ToNonObservableSettings().HasErrors;
-            }
+            var failures = ToNonObservableSettings().Validate().Errors;
+            WeakReferenceMessenger.Default.Send(new ValidationMessage(failures));
+            return !ToNonObservableSettings().HasErrors;
         }
 
         public void NotifyAllChanged() => OnPropertyChanged();

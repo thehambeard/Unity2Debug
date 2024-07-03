@@ -1,10 +1,72 @@
-﻿using System.Diagnostics;
+﻿using ICSharpCode.Decompiler.CSharp.Syntax;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Unity2Debug.Common.SettingsService;
 
 namespace Unity2Debug.Common.Utility.Tools
 {
     public partial class UnityTools
     {
+        public static string? GetUnityMonoPath(string unityInstallPath)
+        {
+            var path = Path.GetDirectoryName(unityInstallPath);
+
+            if (path == null)
+                return null;
+
+            string? result = Path.Combine(path, UnityConstants.DEV64_MONO_PATH);
+
+            if (!Directory.Exists(result))
+                result = Path.Combine(path, UnityConstants.DEV64_MONO_PATH2);
+
+            return Directory.Exists(result) ? result : null;
+        }
+
+        public static bool IsAssemblyVersionMatch(out string unityVersion, string unityInstallPath, string gameExePath)
+        {
+            var gameVersion = GetUnityVersionFromAssembly(gameExePath);
+            unityVersion = GetUnityVersionFromAssembly(unityInstallPath) ?? string.Empty;
+            return !string.IsNullOrEmpty(unityVersion) && gameVersion == unityVersion;
+        }
+
+        public static bool TryGetVaildUnityPath(out (string path, string version)? validPathAndVersion, string basePath, string gameExePath)
+        {
+            validPathAndVersion = null;
+            string? dir;
+            string?[] possiblePaths = 
+            [
+                Path.Combine(basePath, "Unity.exe"),
+                Path.Combine(basePath, UnityConstants.UNITY_EXE_PATH),
+                GetUnityExeFromHubdirectory(basePath, gameExePath)
+            ];
+
+            foreach (var testPath in possiblePaths)
+            {
+                if (testPath != null && File.Exists(testPath) && IsAssemblyVersionMatch(out var version, testPath, gameExePath) && (dir = Path.GetDirectoryName(testPath)) != null)
+                {
+                    validPathAndVersion = (dir, version);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static string? GetUnityExeFromHubdirectory(string hubDirectory, string gameExePath)
+        {
+            var version = GetUnityVersionFromAssembly(gameExePath);
+
+            if (string.IsNullOrEmpty(version))
+                return null;
+
+            if (GetUnityVersionsInPath(hubDirectory).Contains($"{version}f1"))
+                version = $"{version}f1";
+
+            var path = Path.Combine(hubDirectory, version, UnityConstants.UNITY_EXE_PATH);
+
+            return File.Exists(path) ? path : null;
+        }
+
         public static List<string> GetUnityVersionsInPath(string path)
         {
             List<string> result = [];
@@ -22,22 +84,22 @@ namespace Unity2Debug.Common.Utility.Tools
             return result;
         }
 
-        public static string GetUnityVersionFromAssembly(string gameExePath)
+        public static string? GetUnityVersionFromAssembly(string assemblyPath)
         {
-            if (!File.Exists(gameExePath))
-                return string.Empty;
+            if (!File.Exists(assemblyPath))
+                return null;
 
-            var fileInfo = FileVersionInfo.GetVersionInfo(gameExePath);
+            var fileInfo = FileVersionInfo.GetVersionInfo(assemblyPath);
 
             if (fileInfo.ProductVersion != null)
             {
                 var match = UnityVersionRegex().Match(fileInfo.ProductVersion);
 
                 if (match.Success)
-                    return match.Value;
+                    return $"{match.Value}f1";
             }
 
-            return string.Empty;
+            return null;
         }
 
         public static string? GetSteamAppId(string gamePath)
@@ -55,7 +117,7 @@ namespace Unity2Debug.Common.Utility.Tools
             if (index == -1)
                 return string.Empty;
 
-            var appFolder = fullPath.Substring(0, index + appFolderName.Length);
+            var appFolder = fullPath[..(index + appFolderName.Length)];
 
             if (appFolder == null && !Directory.Exists(appFolder))
                 return string.Empty;
@@ -71,7 +133,7 @@ namespace Unity2Debug.Common.Utility.Tools
         {
             string? appId = null;
 
-            using (StreamReader reader = new StreamReader(filePath))
+            using (StreamReader reader = new(filePath))
             {
                 string? line;
 

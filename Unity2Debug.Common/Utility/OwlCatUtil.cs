@@ -17,27 +17,33 @@ namespace Unity2Debug.Common.Utility
 
         private static string FindInstallLocation(string gameFolderName, string logName, string toFind, string regex)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            try
             {
-                var DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "Low", "Owlcat Games", gameFolderName, logName);
-                var line = string.Empty;
-                foreach (var lineIter in File.ReadLines(DataPath))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    if (lineIter.Contains(toFind))
+                    var DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "Low", "Owlcat Games", gameFolderName, logName);
+                    var line = string.Empty;
+
+                    foreach (var lineIter in File.ReadLines(DataPath))
                     {
-                        line = lineIter;
-                        break;
+                        if (lineIter.Contains(toFind))
+                        {
+                            line = lineIter;
+                            break;
+                        }
+                    }
+                    Match match = Regex.Match(line, regex);
+                    if (match.Success)
+                    {
+                        return match.Groups[1].Value;
                     }
                 }
-                Match match = Regex.Match(line, regex);
-                if (match.Success)
-                {
-                    return match.Groups[1].Value;
-                }
             }
-            else
+            catch 
             {
+                return "";
             }
+
             return "";
         }
     }

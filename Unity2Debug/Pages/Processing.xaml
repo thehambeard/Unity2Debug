@@ -10,13 +10,6 @@
       Loaded="Page_Loaded"
       Style="{StaticResource DefaultPageStyle}">
 
-    <Page.Resources>
-        <Style TargetType="RichTextBox">
-            <Setter Property="Background" Value="{StaticResource DarkBackgroundBrush}"/>
-            <Setter Property="Margin" Value="5" />
-        </Style>
-    </Page.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -25,10 +18,13 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <RichTextBox 
+        <TextBox 
             Grid.Row="0"
-            x:Name="RichTextBoxLogger"
-            HorizontalAlignment="Stretch"/>
+            x:Name="TextBoxLogger"
+            Style="{StaticResource DefaultTextBoxStyle}"
+            Margin="5"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"/>
         <ProgressBar 
             Grid.Row="1"
             x:Name="ProgressBar" Height="10"

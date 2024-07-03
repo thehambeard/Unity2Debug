@@ -23,6 +23,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="defaults.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(ProjectDir)Utility\Tools\de4dot\&quot; &quot;$(TargetDir)de4dot\&quot; /s /e /y&#xD;&#xA;xcopy &quot;$(ProjectDir)Utility\Tools\peupdate\&quot; &quot;$(TargetDir)peupdate\&quot; /s /e /y" />
   </Target>

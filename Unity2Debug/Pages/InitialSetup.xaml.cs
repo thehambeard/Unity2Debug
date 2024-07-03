@@ -9,14 +9,14 @@ namespace Unity2Debug.Pages
     /// </summary>
     public partial class InitialSetup : Page
     {
-        private readonly RichTextBoxLogger _logger;
+        private readonly TextBoxLogger _logger;
         private readonly InitialSetupVM _vm;
 
         public InitialSetup()
         {
             InitializeComponent();
 
-            _logger = new RichTextBoxLogger(RichTextBoxLogger);
+            _logger = new TextBoxLogger(TextBoxLogger);
             _vm = new InitialSetupVM(_logger, new DialogService.DialogService());
             DataContext = _vm;
         }

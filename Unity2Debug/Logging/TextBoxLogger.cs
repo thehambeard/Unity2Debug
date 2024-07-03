@@ -5,28 +5,51 @@ using Unity2Debug.Common.Logging;
 
 namespace Unity2Debug.Logging
 {
-    public class RichTextBoxLogger : ILogger
+    public class TextBoxLogger : ILogger
     {
-        private RichTextBox _textBox;
+        private readonly TextBox _textBox;
+        private readonly List<string> _logBuffer = new List<string>();
+        private readonly object _lock = new object();
+        private bool _isFlushing = false;
 
-        public RichTextBoxLogger(RichTextBox richTextBox)
+        public TextBoxLogger(TextBox richTextBox)
         {
             _textBox = richTextBox;
         }
 
         public void Clear()
         {
-            _textBox.Dispatcher.Invoke(_textBox.Document.Blocks.Clear);
-            Log("");
+            _textBox.Dispatcher.Invoke(_textBox.Clear);
         }
 
         public void LogToTextBox(string message)
         {
-            _textBox.Dispatcher.Invoke(() =>
+            lock (_lock)
             {
-                _textBox.AppendText(message + Environment.NewLine);
-                _textBox.ScrollToEnd();
-            });
+                _logBuffer.Add(message);
+                if (!_isFlushing)
+                {
+                    _isFlushing = true;
+                    FlushBufferToTextBox();
+                }
+            }
+        }
+
+        private void FlushBufferToTextBox()
+        {
+            _textBox.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                lock (_lock)
+                {
+                    foreach (var message in _logBuffer)
+                    {
+                        _textBox.AppendText(message + Environment.NewLine);
+                    }
+                    _textBox.ScrollToEnd();
+                    _logBuffer.Clear();
+                    _isFlushing = false;
+                }
+            }));
         }
 
         public void Error(string message)

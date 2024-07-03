@@ -1,5 +1,4 @@
-﻿using ICSharpCode.Decompiler.IL;
-using ICSharpCode.Decompiler.Semantics;
+﻿using ICSharpCode.Decompiler;
 using System.Diagnostics;
 using Unity2Debug.Common.Logging;
 using Unity2Debug.Common.SettingsService;
@@ -9,145 +8,129 @@ namespace Unity2Debug.Common.Automation
 {
     public class CopyGameAutomator
     {
-        public CancellationToken CancellationToken { get; set; }
         public DebugSettings DebugSettings { get; set; }
         public DecompileSettings DecompileSettings { get; set; }
 
         private readonly ILogger _logger;
-
-        public CopyGameAutomator(DebugSettings debugSettings, DecompileSettings decompileSettings, ILogger logger, CancellationToken cancellationToken)
+        private readonly IProgress<DecompilationProgress> _progress;
+        private readonly bool _verbose = false;
+        public CopyGameAutomator(DebugSettings debugSettings, DecompileSettings decompileSettings, ILogger logger, IProgress<DecompilationProgress> progress)
         {
-            CancellationToken = cancellationToken;
             DebugSettings = debugSettings;
             DecompileSettings = decompileSettings;
             _logger = logger;
+            _progress = progress;
         }
 
-        public async Task CopyGameAsync()
+        public async Task NewCopyParaAsync()
         {
             var timer = new Stopwatch();
             timer.Start();
+
+            var baseInputPath = Path.GetDirectoryName(DebugSettings.RetailGameExe)
+                ?? throw new NullReferenceException();
+
+            HashSet<string> exludeDir = DebugSettings.GetFullExcludeDirectories();
+            HashSet<string> symlinkPaths = [];
+
+            if (DebugSettings.UseSymlinks)
+                symlinkPaths = DebugSettings.GetFullSymlinkDirectories();
+
+            _logger.Log("Starting Game Copy...");
+            
 
             await Task.Run(() =>
             {
                 try
                 {
-                    _logger.Log("Creating Debug Directories.");
 
-                    var baseInputPath = Path.GetDirectoryName(DebugSettings.RetailGameExe)
-                        ?? throw new NullReferenceException();
+                    var copyDirs = Directory.GetDirectories(baseInputPath, "*", SearchOption.AllDirectories)
+                        .Where(dir => !symlinkPaths.Any(symlink => dir.Contains(symlink))
+                            && !exludeDir.Any(exclude => dir.Contains(exclude)));
 
-                    List<string> symlinkPaths = [];
+                    _logger.Log($"Creating {copyDirs.Count()} Directories...");
+                    _logger.Log($"Symlinking {symlinkPaths.Count} Directories...");
 
-                    if (DebugSettings.UseSymlinks)
-                        symlinkPaths = DebugSettings.GetFullSymlinkDirectories();
+                    var progressStruct = new DecompilationProgress { UnitsCompleted = 0, TotalUnits = copyDirs.Count() + symlinkPaths.Count };
+                    _progress.Report(progressStruct);
 
-                    List<string> exludeDir = DebugSettings.GetFullExcludeDirectories();
-
-                    foreach (string currentInputPath in Directory.GetDirectories(baseInputPath, "*", SearchOption.AllDirectories))
+                    Parallel.ForEach(copyDirs, currentInputPath =>
                     {
-                        try
-                        {
-                            var currentOutputPath = currentInputPath.Replace(baseInputPath, DebugSettings.DebugOutputPath);
+                        if (_verbose) _logger.Log($"Creating {currentInputPath}");
+                        Directory.CreateDirectory(currentInputPath.ToDebugAssemblyPath(baseInputPath, DebugSettings.DebugOutputPath));
+                        progressStruct.UnitsCompleted++;
+                        _progress.Report(progressStruct);
+                    });
 
-                            CancellationToken.ThrowIfCancellationRequested();
 
-                            if (exludeDir.Contains(currentInputPath) || exludeDir.Any(excludePath => GetParentDirectories(currentInputPath).Contains(excludePath)))
-                                continue;
-
-                            if (!Directory.Exists(currentOutputPath))
-                            {
-                                if (DebugSettings.UseSymlinks)
-                                {
-                                    if (symlinkPaths.Contains(currentInputPath))
-                                    {
-                                        _logger.Log($"Symlinking: {currentInputPath}");
-                                        Directory.CreateSymbolicLink(currentOutputPath, currentInputPath);
-                                        continue;
-                                    }
-
-                                    if (symlinkPaths.Any(symlinkPath => GetParentDirectories(currentInputPath).Contains(symlinkPath)))
-                                        continue;
-                                }
-                                _logger.Log($"Creating Directory: {currentOutputPath}");
-                                Directory.CreateDirectory(currentOutputPath.LongPath());
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error($"Failed to copy directory {currentInputPath}!");
-                            _logger.Error(ex);
-                        }
-                    }
-
-                    _logger.Log("Copying Files.");
-
-                    FileMatcher symFileMatcher = new(DebugSettings.GetFullSymlinkFileFilters());
-                    FileMatcher excludeFileMatcher = new(DebugSettings.GetFullExcludeFileFilters());
-
-                    if (DebugSettings.UseSymlinks)
-                        exludeDir.AddRange(symlinkPaths);
-                    
-                    foreach (string currentInputFile in Directory.GetFiles(baseInputPath, "*.*", SearchOption.AllDirectories))
+                    Parallel.ForEach(symlinkPaths, symlinkPath =>
                     {
-                        try
-                        {
-                            CancellationToken.ThrowIfCancellationRequested();
-
-                            //if (DecompileSettings.AssemblyPaths.Contains(currentInputFile))
-                            //    continue;
-
-                            if (exludeDir.Any(excludePath => GetParentDirectories(currentInputFile).Contains(excludePath)))
-                                continue;
-
-                            if(excludeFileMatcher.Match(currentInputFile))
-                                continue;
-
-                            var currentOutputFile = currentInputFile.Replace(baseInputPath, DebugSettings.DebugOutputPath);
-
-                            if (DebugSettings.UseSymlinks && symFileMatcher.Match(currentInputFile))
-                            {
-                                _logger.Log($"Symlinking: {currentInputFile}");
-                                File.CreateSymbolicLink(currentOutputFile.LongPath(), currentInputFile.LongPath());
-                            }
-                            else
-                            {
-                                _logger.Log($"Copying: {currentInputFile}");
-                                File.Copy(currentInputFile.LongPath(), currentOutputFile.LongPath(), true);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error($"Failed to copy file {currentInputFile}!");
-                            _logger.Error(ex);
-                        }
-                    }
+                        if (_verbose) _logger.Log($"Symlinking {symlinkPath}");
+                        Directory.CreateSymbolicLink(symlinkPath.ToDebugAssemblyPath(baseInputPath, DebugSettings.DebugOutputPath), symlinkPath);
+                        progressStruct.UnitsCompleted++;
+                        _progress.Report(progressStruct);
+                    });
                 }
-                catch (OperationCanceledException)
+                catch (Exception ex)
                 {
-                    throw;
+                    _logger.Error($"Failed to create directory {ex.Message}!");
                 }
-                catch (Exception)
-                {
-                    throw;
-                }
+            });
 
-            }, CancellationToken);
+            _progress.Report(new() { Title = "RESET", UnitsCompleted = 0, TotalUnits = 1 }); 
+
+            HashSet<string> symlinkFilePaths = [];
+
+            if (DebugSettings.UseSymlinks)
+                symlinkFilePaths = DebugSettings.GetFullSymlinkFileFilters();
+
+            FileMatcher matcher = new(symlinkFilePaths);
+            FileMatcher excludeFileMatcher = new(DebugSettings.GetFullExcludeFileFilters());
+
+            await Task.Run(() =>
+            {
+
+                try
+                {
+                    var files = Directory.GetFiles(baseInputPath, "*.*", SearchOption.AllDirectories)
+                        .Where(dir => !symlinkPaths.Any(symlink => dir.Contains(symlink))
+                            && !exludeDir.Any(exclude => dir.Contains(exclude)));
+
+                    _logger.Log($"Copying {files.Count()} game files...");
+
+
+                    var progressStruct = new DecompilationProgress { UnitsCompleted = 0, TotalUnits = files.Count() };
+                    _progress.Report(progressStruct);
+
+                    Parallel.ForEach(files, currentInputFile =>
+                    {
+                        if (excludeFileMatcher.Match(currentInputFile))
+                        {
+                            if (_verbose) _logger.Log($"Excluding {currentInputFile}");
+                        }
+                        else if (matcher.Match(currentInputFile))
+                        {
+                            if (_verbose) _logger.Log($"Symlinking {currentInputFile}");
+                            File.CreateSymbolicLink(currentInputFile.ToDebugAssemblyPath(baseInputPath, DebugSettings.DebugOutputPath), currentInputFile);
+                        }
+                        else
+                        {
+                            if (_verbose) _logger.Log($"Copying {currentInputFile}");
+                            File.Copy(currentInputFile, currentInputFile.ToDebugAssemblyPath(baseInputPath, DebugSettings.DebugOutputPath));
+                        }
+
+                        progressStruct.UnitsCompleted++;
+                        _progress.Report(progressStruct);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to copy file {ex.Message}!");
+                }
+            });
 
             timer.Stop();
             _logger.Log($"Copy took {timer.Elapsed.TotalSeconds} seconds...");
-        }
-
-        private static IEnumerable<string> GetParentDirectories(string path)
-        {
-            var parent = Path.GetDirectoryName(path);
-
-            if (parent is null) yield break;
-
-            yield return parent;
-
-            foreach (var ancestor in GetParentDirectories(parent))
-                yield return ancestor;
         }
     }
 }

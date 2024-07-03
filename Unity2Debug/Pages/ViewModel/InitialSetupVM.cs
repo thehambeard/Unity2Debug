@@ -1,13 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Unity2Debug.Common.SettingsService;
+using Unity2Debug.Dialogs;
+using Unity2Debug.Dialogs.ViewModel;
 using Unity2Debug.DialogService;
 using Unity2Debug.Logging;
 using Unity2Debug.Navigation;
 
 namespace Unity2Debug.Pages.ViewModel
 {
-    public partial class InitialSetupVM : ViewModelBase<InitialSetupVM, DecompileSettings>
+    public partial class InitialSetupVM : ViewModelBase
     {
         [ObservableProperty]
         private int _assemblySelectedIndex;
@@ -15,9 +17,13 @@ namespace Unity2Debug.Pages.ViewModel
         [ObservableProperty]
         private string? _profileComboBoxText;
 
-        public InitialSetupVM(RichTextBoxLogger logger, IDialogService dialogService) : base(logger, dialogService)
+        public InitialSetupVM(TextBoxLogger logger, IDialogService dialogService) : base(logger, dialogService)
         {
+            NotifyAllChanged();
         }
+
+        public override void NotifyAllChanged() => Profiles?.CurrentProfile?.DecompileSettings.NotifyAllChanged();
+        public override void ValidateProfile() => Profiles?.CurrentProfile?.DecompileSettings.CheckIsValid();
 
         [RelayCommand]
         private void AddProfile()
@@ -28,7 +34,16 @@ namespace Unity2Debug.Pages.ViewModel
                 Profiles.AddProfile(text);
                 Profiles.SelectProfile(text);
                 ProfileComboBoxText = Profiles?.CurrentProfile?.Name;
+                NotifyAllChanged();
             }
+        }
+
+        [RelayCommand] private void AutoAddProfile() 
+        {
+            Profiles.Save();
+            _dialogService.ShowDialog(new LoadDefaultsVM());
+            Profiles = new(Common.SettingsService.Settings.Instance);
+            NotifyAllChanged();
         }
 
         [RelayCommand]
@@ -37,12 +52,15 @@ namespace Unity2Debug.Pages.ViewModel
             Profiles.RemoveProfile();
             Profiles.CurrentProfileIndex = 0;
             ProfileComboBoxText = Profiles?.CurrentProfile?.Name;
+            NotifyAllChanged();
         }
 
         [RelayCommand]
         private void NextButtonClick()
         {
             if (Profiles.CurrentProfile == null) return;
+
+            if (!Profiles.CurrentProfile.DecompileSettings.CheckIsValid()) return;
 
             Profiles.Save();
 
@@ -60,6 +78,8 @@ namespace Unity2Debug.Pages.ViewModel
             string? folderPath = _dialogService.OpenFolder();
             if (folderPath != null)
                 Profiles.CurrentProfile.DecompileSettings.OutputDirectory = folderPath;
+
+            ValidateProfile();
         }
 
         [RelayCommand]
@@ -74,6 +94,8 @@ namespace Unity2Debug.Pages.ViewModel
                 current.Add(filePath);
 
             Profiles.CurrentProfile.DecompileSettings.AssemblyPaths = [.. current];
+
+            NotifyAllChanged();
         }
 
         [RelayCommand]
@@ -83,6 +105,8 @@ namespace Unity2Debug.Pages.ViewModel
 
             if (index >= 0 && index < Profiles.CurrentProfile.DecompileSettings.AssemblyPaths.Count)
                 Profiles.CurrentProfile.DecompileSettings.AssemblyPaths.RemoveAt(index);
+
+            NotifyAllChanged();
         }
     }
 }

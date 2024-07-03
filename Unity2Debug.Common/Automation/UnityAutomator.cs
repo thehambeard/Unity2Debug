@@ -1,6 +1,7 @@
 ﻿using Unity2Debug.Common.Logging;
 using Unity2Debug.Common.SettingsService;
 using Unity2Debug.Common.Utility;
+using Unity2Debug.Common.Utility.Tools;
 
 namespace Unity2Debug.Common.Automation
 {
@@ -49,18 +50,7 @@ namespace Unity2Debug.Common.Automation
 
         public void ReplaceWithDevelopmentMono()
         {
-            _unityMonoPath = Path.Combine(
-                _debugSettings.UnityInstallPath,
-                _debugSettings.UnityVersion,
-                UnityConstants.DEV64_MONO_PATH);
-
-            if (!Directory.Exists(_unityMonoPath))
-            {
-                _unityMonoPath = Path.Combine(
-                _debugSettings.UnityInstallPath,
-                _debugSettings.UnityVersion,
-                UnityConstants.DEV64_MONO_PATH2);
-            }
+            _unityMonoPath = UnityTools.GetUnityMonoPath(_debugSettings.UnityInstallPath.EnsureSeparator());
 
             if (!Directory.Exists(_unityMonoPath))
             {

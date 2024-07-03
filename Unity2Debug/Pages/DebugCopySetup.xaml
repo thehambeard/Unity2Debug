@@ -58,21 +58,23 @@
                     Text="{Binding Profiles.CurrentProfile.DebugSettings.UnityInstallPath, UpdateSourceTrigger=PropertyChanged}"/>
                 <Button 
                     Content="Browse" 
-                    Command="{Binding SelectUnityInstallPathCommand}"/>
+                    Command="{Binding SelectUnityInstallPathCommand}"/> 
             </WrapPanel>
             <WrapPanel>
                 <Label 
                     Content="Unity Version:" />
-                <ComboBox 
-                    VerticalAlignment="Center" 
+                <TextBox 
                     Width="200" 
-                    ItemsSource="{Binding Profiles.CurrentProfile.DebugSettings.UnityVersions, Mode=OneWay}" 
-                    SelectedValue="{Binding Profiles.CurrentProfile.DebugSettings.UnityVersion}"/>
+                    IsReadOnly="True"
+                    Text="{Binding Profiles.CurrentProfile.DebugSettings.UnityVersion}"/>
             </WrapPanel>
             <WrapPanel>
                 <Label 
                     Content="Use Symlinks:" />
                 <CheckBox VerticalAlignment="Center" IsChecked="{Binding Profiles.CurrentProfile.DebugSettings.UseSymlinks, UpdateSourceTrigger=PropertyChanged}"/>
+                <Label 
+                    Content="Verbose Logging:" />
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding Profiles.CurrentProfile.DebugSettings.VerboseLogging, UpdateSourceTrigger=PropertyChanged}"/>
             </WrapPanel>
             <WrapPanel>
                 <Label 
@@ -126,8 +128,11 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"/>    
                 </Grid>
-                <RichTextBox 
-                    x:Name="RichTextBoxLogger"
+                <TextBox 
+                    x:Name="TextBoxLogger"
+                    Style="{StaticResource TextBoxLogger}"
+                    Margin="5"
+                    HorizontalAlignment="Stretch"
                     Height="100"/>
                 <Button 
                     Content="Next"

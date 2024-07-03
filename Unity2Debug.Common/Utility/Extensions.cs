@@ -25,5 +25,43 @@
 
             return array;
         }
+
+        public static HashSet<string> GetFullSymlinkDirectories(this List<string> symlinks, string retailBasePath)
+        {
+            HashSet<string> result = [];
+
+            foreach (var link in symlinks.Where(link => link.EndsWith('\\')))
+                result.Add(Path.Combine(retailBasePath, link).TrimSeparator());
+
+            return result;
+        }
+
+        public static HashSet<string> GetFullSymlinkFileFilters(this List<string> symlinks, string retailBasePath)
+        {
+            HashSet<string> result = [];
+
+            foreach (var link in symlinks.Where(link => !link.EndsWith('\\')))
+                result.Add(Path.Combine(retailBasePath, link));
+
+            return result;
+        }
+
+        public static string ToDebugAssemblyPath(this string assemblyPath, string basePath, string debugOutputPath)
+        {
+            return assemblyPath.Replace(basePath, debugOutputPath);
+        }
+
+        public static List<string> ToDebugAssemblyPaths(this List<string> assemblyPaths, string basePath, string debugOutputPath)
+        {
+            if (assemblyPaths == null || assemblyPaths.Count == 0) return [];
+
+            return assemblyPaths.Select(x => x.ToDebugAssemblyPath(basePath, debugOutputPath)).ToList();
+        }
+
+        public static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
+        {
+            foreach (var item in collection)
+                hashSet.Add(item);
+        }
     }
 }

@@ -10,21 +10,19 @@ namespace Unity2Debug.Common.Automation
     public class Automator
     {
         private readonly ILogger _logger;
-        private readonly CancellationToken _cancellationToken;
         private readonly DecompileSettings _decompileSettings;
         private readonly DebugSettings _debugSettings;
         private readonly IProgress<DecompilationProgress> _decompilationProgress;
 
-        public Automator(ILogger logger, DecompileSettings decompileSettings, DebugSettings debugSettings, CancellationToken cancellationToken, IProgress<DecompilationProgress> decompilationProgress)
+        public Automator(ILogger logger, DecompileSettings decompileSettings, DebugSettings debugSettings, IProgress<DecompilationProgress> decompilationProgress)
         {
             _logger = logger;
-            _cancellationToken = cancellationToken;
             _decompileSettings = decompileSettings;
             _debugSettings = debugSettings;
             _decompilationProgress = decompilationProgress;
         }
 
-        public void Start()
+        public async Task StartAsync()
         {
             try
             {
@@ -36,16 +34,15 @@ namespace Unity2Debug.Common.Automation
 
                 if (_debugSettings.CreateDebugCopy)
                 {
-                    CreateDebug();
-                    
-                    Task.Run(() => DecompileAsync(_decompileSettings.AssemblyPaths)).Wait();
+                    await CreateDebugAsync();
+                    await DecompileAsync(_decompileSettings.AssemblyPaths);
 
                     UnityAutomator unityAutomator = new(_debugSettings, _logger);
                     unityAutomator.Start();
                 }
                 else
                 {
-                    Task.Run(() => DecompileAsync(_decompileSettings.AssemblyPaths)).Wait();
+                    await DecompileAsync(_decompileSettings.AssemblyPaths);
                 }
 
                 _logger.Log("Processing Complete!");
@@ -62,11 +59,7 @@ namespace Unity2Debug.Common.Automation
             }
         }
 
-        public void ResetProgress()
-        {
-            var p = new DecompilationProgress() { Title = "RESET", UnitsCompleted = 0, TotalUnits = 1 };
-            _decompilationProgress.Report(p);
-        }
+        public void ResetProgress() => _decompilationProgress.Report(new() { Title = "RESET", UnitsCompleted = 0, TotalUnits = 1 });
 
         public bool PreStartSettingChecks()
         {
@@ -154,10 +147,10 @@ namespace Unity2Debug.Common.Automation
             }
         }
 
-        private void CreateDebug()
+        private async Task CreateDebugAsync()
         {
-            CopyGameAutomator copyAutomator = new(_debugSettings, _decompileSettings, _logger, _cancellationToken);
-            Task.Run(copyAutomator.CopyGameAsync).Wait();
+            CopyGameAutomator copyAutomator = new(_debugSettings, _decompileSettings, _logger, _decompilationProgress);
+            await copyAutomator.NewCopyParaAsync();
 
             PatchingAutomator patchingAutomator = new(_debugSettings, _decompileSettings, _logger);
             patchingAutomator.Start();
